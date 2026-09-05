@@ -109,7 +109,8 @@ def test_session_keeps_first_break_and_records_setup_outcome():
 def test_performance_summary():
     results = [
         evaluate_trade("long", 100, 99, 102, highs=[102], lows=[100]),
-        evaluate_trade("short", 100, 101, 98, highs=[101], lows=[99]),
+        # Avoid an intrabar stop/target tie: target is reached without touching 101.
+        evaluate_trade("short", 100, 101, 98, highs=[100.5], lows=[98]),
         evaluate_trade("long", 100, 99, 102, highs=[99], lows=[98]),
     ]
     stats = summary(results)
@@ -134,7 +135,8 @@ def test_performance_breakdowns():
 
     session = run_session(pd.DataFrame([
         {"timestamp": "2026-09-01 09:45", "open": 102, "high": 105, "low": 100, "close": 104},
-        {"timestamp": "2026-09-01 10:00", "open": 104, "high": 108, "low": 103, "close": 107},
+        # Strong first post-anchor candle so the expected confirmation remains at 10:00.
+        {"timestamp": "2026-09-01 10:00", "open": 104, "high": 108, "low": 103.8, "close": 107},
         {"timestamp": "2026-09-01 10:15", "open": 107, "high": 111, "low": 106, "close": 110},
         {"timestamp": "2026-09-01 10:30", "open": 110, "high": 116, "low": 109, "close": 115},
         {"timestamp": "2026-09-01 11:00", "open": 115, "high": 125, "low": 114, "close": 124},
