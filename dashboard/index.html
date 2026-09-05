@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>45-Minute Time-Based Robot</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #0b1020; color: #eef2ff; }
+    .wrap { max-width: 1100px; margin: auto; padding: 32px 20px; }
+    h1 { margin-bottom: 4px; }
+    .sub { color: #aab4d0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 14px; margin: 24px 0; }
+    .card { background: #151c31; border: 1px solid #2a3554; border-radius: 12px; padding: 18px; }
+    .label { color: #9aa8c7; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .value { font-size: 26px; font-weight: 700; margin-top: 8px; }
+    .timeline { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0; }
+    .time { padding: 10px 14px; border-radius: 8px; background: #202a45; }
+    .active { border: 1px solid #7dd3fc; }
+    .signal { font-size: 32px; font-weight: 700; }
+    .note { color: #aab4d0; line-height: 1.5; }
+    code { background: #202a45; padding: 3px 6px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>🤖 45-Minute Time-Based Trading Robot</h1>
+    <div class="sub">Research dashboard — historical/paper simulation only</div>
+
+    <div class="timeline">
+      <div class="time">08:45</div><div class="time active">09:45 Anchor</div><div class="time">10:45</div>
+      <div class="time">11:45</div><div class="time">12:45</div><div class="time">13:45</div><div class="time">15:45</div>
+    </div>
+
+    <section class="grid">
+      <div class="card"><div class="label">Robot state</div><div class="value">READY</div></div>
+      <div class="card"><div class="label">Anchor</div><div class="value">09:45</div></div>
+      <div class="card"><div class="label">Bias</div><div class="value" id="bias">WAIT</div></div>
+      <div class="card"><div class="label">Confirmation</div><div class="value" id="confirmation">WAIT</div></div>
+    </section>
+
+    <section class="card">
+      <div class="label">Decision engine</div>
+      <p class="note">Time decides WHEN to analyze. Price decides WHAT to do. Liquidity helps define WHERE to look. The robot waits for objective confirmation instead of automatically buying or selling at 09:45.</p>
+      <div class="signal" id="signal">NO SETUP</div>
+    </section>
+
+    <section class="grid">
+      <div class="card"><div class="label">Entry</div><div class="value" id="entry">—</div></div>
+      <div class="card"><div class="label">Invalidation</div><div class="value" id="stop">—</div></div>
+      <div class="card"><div class="label">Target</div><div class="value" id="target">—</div></div>
+    </section>
+
+    <p class="note">This page is a visual research interface. The Python robot in <code>run_robot.py</code> performs the actual historical analysis against OHLCV CSV data.</p>
+  </main>
+  <script>
+    // Demo state only. Real values come from the Python backtester.
+    const demo = { bias: 'WAIT', confirmation: 'WAIT', signal: 'NO SETUP' };
+    document.getElementById('bias').textContent = demo.bias;
+    document.getElementById('confirmation').textContent = demo.confirmation;
+    document.getElementById('signal').textContent = demo.signal;
+  </script>
+</body>
+</html>
