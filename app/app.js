@@ -2,19 +2,6 @@ const modelTimes = ["08:45","09:45","10:45","11:45","12:45","13:45","15:45"];
 const labels = ["Pre-open","Anchor","Reaction","Follow-through","Midday","Afternoon","Pre-close"];
 const timezone = "America/New_York";
 
-// The browser UI is intentionally research-only. Until a validated data API is
-// added, market values shown here are explicitly DEMO values and must never be
-// interpreted as live robot signals.
-const demoMarket = {
-  anchor: { high: 19842.0, low: 19782.0, close: 19830.0 },
-  price: 19858.0,
-  recentHigh: 19872.0,
-  recentLow: 19755.0,
-  structure: "bullish",
-  displacement: true,
-  liquidity: "buy-side nearby"
-};
-
 function minutes(hhmm) {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
@@ -34,47 +21,50 @@ function setText(id, value) {
   if (element) element.textContent = value;
 }
 
-function priceState(price, anchor) {
-  if (price > anchor.high) return "Above anchor";
-  if (price < anchor.low) return "Below anchor";
-  return "Inside anchor";
+function renderSummary(data) {
+  const stats = data.summary || {};
+  setText("#dataSource", `Python engine · ${data.source_file || "research dataset"}`);
+  setText("#tradeCount", String(stats.trades ?? 0));
+  setText("#winRate", `${Number(stats.win_rate ?? 0).toFixed(2)}%`);
+  setText("#netR", `${Number(stats.net_r ?? 0).toFixed(2)}R`);
+  setText("#sessionCount", String((data.sessions || []).length));
+
+  const rows = (data.sessions || []).map((item) => `
+    <tr>
+      <td>${item.date}</td>
+      <td>${item.first_break}</td>
+      <td>${item.first_confirmation}</td>
+      <td>${item.entry ?? "--"}</td>
+      <td>${item.target ?? "--"}</td>
+      <td>${item.outcome}</td>
+      <td>${Number(item.r_multiple ?? 0).toFixed(2)}R</td>
+    </tr>
+  `).join("");
+  const table = document.querySelector("#sessionRows");
+  if (table) table.innerHTML = rows || `<tr><td colspan="7">No research sessions found.</td></tr>`;
+
+  const firstTrade = (data.sessions || []).find(item => item.outcome !== "no_setup");
+  if (firstTrade) {
+    setText("#decision", `RESEARCH: ${firstTrade.outcome.toUpperCase()} · ${firstTrade.first_confirmation.toUpperCase()} SETUP`);
+    setText("#direction", firstTrade.first_confirmation.toUpperCase());
+    setText("#entry", firstTrade.entry?.toFixed(2) ?? "--");
+    setText("#invalidation", firstTrade.invalidation?.toFixed(2) ?? "--");
+    setText("#target", firstTrade.target?.toFixed(2) ?? "--");
+  } else {
+    setText("#decision", "RESEARCH: NO CONFIRMED SETUP");
+  }
 }
 
-function evaluateDemo() {
-  const state = priceState(demoMarket.price, demoMarket.anchor);
-  const bullishConfirmed = state === "Above anchor" && demoMarket.structure === "bullish" && demoMarket.displacement;
-  const bearishConfirmed = state === "Below anchor" && demoMarket.structure === "bearish" && demoMarket.displacement;
-
-  setText("#anchor", `${demoMarket.anchor.high.toFixed(2)} / ${demoMarket.anchor.low.toFixed(2)}`);
-  setText("#anchorRange", `${(demoMarket.anchor.high - demoMarket.anchor.low).toFixed(2)} pts`);
-  setText("#priceState", `${state} · ${demoMarket.price.toFixed(2)}`);
-  setText("#structure", demoMarket.structure.toUpperCase());
-  setText("#displacement", demoMarket.displacement ? "Confirmed" : "Not confirmed");
-  setText("#liquidity", `${demoMarket.liquidity} · H ${demoMarket.recentHigh.toFixed(2)} / L ${demoMarket.recentLow.toFixed(2)}`);
-
-  if (bullishConfirmed) {
-    const entry = demoMarket.price;
-    const invalidation = demoMarket.anchor.low;
-    const risk = entry - invalidation;
-    const target = entry + risk * 2;
-    setText("#decision", "DEMO: CONFIRMED LONG SETUP");
-    setText("#direction", "LONG");
-    setText("#entry", entry.toFixed(2));
-    setText("#invalidation", invalidation.toFixed(2));
-    setText("#target", target.toFixed(2));
-  } else if (bearishConfirmed) {
-    const entry = demoMarket.price;
-    const invalidation = demoMarket.anchor.high;
-    const risk = invalidation - entry;
-    const target = entry - risk * 2;
-    setText("#decision", "DEMO: CONFIRMED SHORT SETUP");
-    setText("#direction", "SHORT");
-    setText("#entry", entry.toFixed(2));
-    setText("#invalidation", invalidation.toFixed(2));
-    setText("#target", target.toFixed(2));
-  } else {
-    setText("#decision", "DEMO: WAIT FOR CONFIRMATION");
-    ["#direction", "#entry", "#invalidation", "#target"].forEach(id => setText(id, "--"));
+async function loadResearchResults() {
+  try {
+    const response = await fetch("data/demo-results.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    renderSummary(data);
+  } catch (error) {
+    setText("#dataSource", "Research data could not be loaded");
+    setText("#decision", "RESEARCH DATA ERROR");
+    console.error(error);
   }
 }
 
@@ -98,5 +88,5 @@ document.querySelector("#timeline").innerHTML = modelTimes.map((t, i) =>
 ).join("");
 
 updateClock();
-evaluateDemo();
+loadResearchResults();
 setInterval(updateClock, 15000);
