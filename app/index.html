@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>45-Minute Time-Based Robot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">RESEARCH TERMINAL</p>
+      <h1>45-Minute Time-Based Robot</h1>
+      <p class="subtitle">Time decides WHEN · Price decides WHAT · Liquidity decides WHERE</p>
+    </div>
+    <div class="status"><span class="dot"></span> PAPER / RESEARCH MODE</div>
+  </header>
+
+  <main class="layout">
+    <section class="card chart-card">
+      <div class="card-head">
+        <div>
+          <h2>TradingView Chart</h2>
+          <p>Use TradingView for chart viewing. The robot does not place orders.</p>
+        </div>
+        <a class="button" href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Open TradingView</a>
+      </div>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+      </div>
+    </section>
+
+    <aside class="card robot-card">
+      <div class="card-head"><h2>Robot Monitor</h2><span id="clock">--:--</span></div>
+      <div class="metric"><span>Current window</span><strong id="window">--</strong></div>
+      <div class="metric"><span>09:45 anchor</span><strong id="anchor">Waiting for data</strong></div>
+      <div class="metric"><span>Structure</span><strong id="structure">Neutral</strong></div>
+      <div class="metric"><span>Displacement</span><strong id="displacement">Not checked</strong></div>
+      <div class="decision" id="decision">WAITING FOR MARKET DATA</div>
+      <p class="note">This screen is for research and paper simulation only. It does not send orders to a broker.</p>
+    </aside>
+
+    <section class="card timeline-card">
+      <div class="card-head"><h2>Model Timeline</h2><span>SAST</span></div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+  </main>
+
+  <script src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+  {
+    "autosize": true,
+    "symbol": "OANDA:NAS100USD",
+    "interval": "15",
+    "timezone": "Africa/Johannesburg",
+    "theme": "dark",
+    "style": "1",
+    "locale": "en",
+    "allow_symbol_change": true,
+    "calendar": false,
+    "support_host": "https://www.tradingview.com"
+  }
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
