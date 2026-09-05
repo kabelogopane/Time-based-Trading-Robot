@@ -1,0 +1,67 @@
+{
+  "generated_by": "Time-Based-Trading-Robot Python research engine",
+  "mode": "historical research / paper simulation",
+  "live_data": false,
+  "broker_connected": false,
+  "timezone": "America/New_York",
+  "reward_to_risk": 2.0,
+  "source_file": "data/sample_45m_sessions.csv",
+  "summary": {
+    "trades": 1,
+    "wins": 1,
+    "losses": 0,
+    "win_rate": 100.0,
+    "net_r": 2.0,
+    "average_r": 2.0
+  },
+  "sessions": [
+    {
+      "date": "2026-09-01",
+      "anchor_high": 105.0,
+      "anchor_low": 100.0,
+      "anchor_close": 104.0,
+      "post_anchor_high": 165.0,
+      "post_anchor_low": 103.0,
+      "first_break": "bullish",
+      "first_confirmation": "bullish",
+      "entry": 120.0,
+      "invalidation": 100.0,
+      "target": 160.0,
+      "outcome": "win",
+      "r_multiple": 2.0,
+      "entry_timestamp": "2026-09-01T10:45:00-04:00"
+    },
+    {
+      "date": "2026-09-02",
+      "anchor_high": 205.0,
+      "anchor_low": 200.0,
+      "anchor_close": 204.0,
+      "post_anchor_high": 203.0,
+      "post_anchor_low": 175.0,
+      "first_break": "bearish",
+      "first_confirmation": "none",
+      "entry": null,
+      "invalidation": null,
+      "target": null,
+      "outcome": "no_setup",
+      "r_multiple": 0.0,
+      "entry_timestamp": null
+    },
+    {
+      "date": "2026-09-03",
+      "anchor_high": 305.0,
+      "anchor_low": 300.0,
+      "anchor_close": 304.0,
+      "post_anchor_high": 306.0,
+      "post_anchor_low": 294.0,
+      "first_break": "none",
+      "first_confirmation": "none",
+      "entry": null,
+      "invalidation": null,
+      "target": null,
+      "outcome": "no_setup",
+      "r_multiple": 0.0,
+      "entry_timestamp": null
+    }
+  ]
+}
