@@ -2,40 +2,49 @@
 
 A research and backtesting project that converts Kabelo Gopane's original 45-minute time-based trading model into objective, testable rules.
 
-> **Important:** This project is for research, backtesting, and paper-trading education. It does not guarantee profitable trading and does not place real-money trades.
+> **Important:** This project is for research and paper-simulation education. It does not guarantee profitable trading and does not place real-money trades.
 
 ## Core Model
 
-**Time decides WHEN to analyze. Price decides WHAT to do. Liquidity decides WHERE to target.**
+**Time decides WHEN to analyze. Price decides WHAT to do. Liquidity decides WHERE to study the reaction.**
 
-The model studies market behavior around repeated 45-minute time windows using **U.S. Eastern Time / New York time**.
+The model studies market behavior around repeated time windows using **U.S. Eastern Time / New York time**. ICT/SMC concepts are supporting measurements only; they do not replace the time model.
 
-### Primary time windows
+### Primary model times
 
 | Time (ET) | Role |
 |---|---|
 | 08:45 | Pre-open observation |
-| 09:45 | Primary New York anchor |
+| 09:45 | Primary anchor |
 | 10:45 | Post-open reaction |
 | 11:45 | Follow-through / structure check |
 | 12:45 | Midday observation |
 | 13:45 | Early afternoon observation |
 | 15:45 | Pre-close observation |
 
+### 09:45 research windows
+
+For detailed backtesting, the 09:45 anchor can also be decomposed into consecutive 45-minute windows:
+
+`09:45→10:30 → 10:30→11:15 → 11:15→12:00 → 12:00→12:45 → ... → 15:00→15:45`
+
+This is a measurement layer. It lets us test what happens inside each 45-minute period before adding entry rules. The window engine uses `[start, end)` boundaries, so a candle exactly on a boundary belongs to the next window.
+
 ## Strategy Logic
 
 The robot does **not** assume that 09:45 automatically means BUY or SELL.
 
 1. Detect the time anchor.
-2. Record the anchor high and low.
-3. Observe price delivery after the anchor.
-4. Classify bullish, bearish, or neutral structure.
-5. Measure liquidity and displacement.
-6. Wait for objective confirmation.
-7. Define a hypothetical entry and invalidation.
-8. Define a target using a testable rule.
-9. Evaluate the setup bar-by-bar in the backtester.
-10. Record performance in R-multiples.
+2. Build the 45-minute observation windows.
+3. Record each window's OHLC, range, and direction.
+4. Observe price delivery after the anchor.
+5. Classify bullish, bearish, or neutral structure.
+6. Measure liquidity and displacement.
+7. Wait for objective confirmation.
+8. Define a hypothetical entry and invalidation.
+9. Define a target using a testable rule.
+10. Evaluate the setup bar-by-bar in the backtester.
+11. Record performance in R-multiples.
 
 ## Supporting Concepts
 
@@ -54,7 +63,8 @@ These are supporting measurements, not replacements for the original time model:
 ### Strategy engine
 - 45-minute observation-time logic in U.S. Eastern Time
 - 09:45 anchor detection
-- Anchor range classification
+- Consecutive 45-minute window aggregation
+- Window OHLC, high/low range, candle count, and direction
 - Basic bullish/bearish/neutral structure detection
 - Liquidity high/low measurements
 - Displacement measurement
@@ -68,13 +78,7 @@ These are supporting measurements, not replacements for the original time model:
 - Win rate and net-R reporting
 - Conservative handling when stop and target occur in the same candle
 - Historical CSV loader and session runner
-
-### Dashboard
-- GitHub Pages research terminal
-- TradingView embedded chart for visual charting
-- U.S. Eastern Time model timeline
-- Visible 09:45 anchor, price state, structure, displacement, liquidity, and decision logic
-- Demo session clearly separated from real market data
+- Session journal output
 
 ### TradingView indicator
 - `tradingview/time_based_model.pine` marks the 09:45 ET anchor and anchor high/low.
@@ -105,9 +109,12 @@ Time-Based-Trading-Robot/
 │   ├── engine.py
 │   ├── performance.py
 │   ├── reports.py
-│   └── session.py
+│   ├── journal.py
+│   ├── session.py
+│   └── time_windows.py
 ├── data/
-│   └── loader.py
+│   ├── loader.py
+│   └── sample_45m_sessions.csv
 ├── risk/
 │   └── risk_manager.py
 ├── tradingview/
@@ -118,7 +125,8 @@ Time-Based-Trading-Robot/
 │   └── app.js
 ├── run_robot.py
 └── tests/
-    └── test_strategy.py
+    ├── test_strategy.py
+    └── test_time_windows.py
 ```
 
 ## How to Run
@@ -152,8 +160,8 @@ The CSV must contain:
 ### Phase 1 — Research Engine
 - [x] Create dedicated repository
 - [x] Document the original model
-- [x] Build time-window engine
 - [x] Build 09:45 anchor detector
+- [x] Build consecutive 45-minute measurement windows
 - [x] Build market-structure rules
 - [x] Build liquidity detector
 - [x] Build displacement detector
@@ -165,7 +173,8 @@ The CSV must contain:
 - [x] Add automated tests
 
 ### Phase 2 — Validation
-- [ ] Import a clean historical OHLCV dataset.
+- [x] Create a controlled synthetic test dataset.
+- [ ] Import a clean real historical OHLCV dataset for research.
 - [ ] Test the rules across a large historical sample.
 - [ ] Measure setup frequency, win rate, average R, drawdown, and losing streaks.
 - [ ] Test whether each rule improves results or only adds complexity.
@@ -177,8 +186,8 @@ The CSV must contain:
 - [ ] Add setup classification and confidence metrics.
 - [ ] Produce clear trade journals and performance reports.
 
-### Phase 4 — Paper Trading
-- [ ] Connect validated signals to a paper-trading workflow.
+### Phase 4 — Paper Simulation
+- [ ] Connect validated signals to a paper-simulation workflow.
 - [ ] Monitor performance without real-money execution.
 
 ## Design Principle
@@ -189,6 +198,6 @@ We are not claiming to know a hidden market algorithm. We are building a measura
 
 ## Status
 
-**Current stage: Phase 2 preparation — research engine + dashboard foundation.**
+**Current stage: Phase 2 preparation — time-window engine + backtesting foundation.**
 
-**Next milestone: Load a real historical OHLCV dataset and run the first complete session-by-session validation.**
+**Next milestone: connect the new 45-minute window observations to liquidity, displacement, and structure measurements, then validate the complete rule set on clean historical data.**
