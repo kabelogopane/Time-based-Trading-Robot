@@ -58,4 +58,5 @@ def test_windows_do_not_mix_calendar_days():
     result = build_45m_windows(frame)
     assert result[0].date == "2026-09-01"
     assert result[-1].date == "2026-09-02"
-    assert result[-1].open == 204
+    # The anchor candle starts the new day's first window.
+    assert result[-1].open == 200
