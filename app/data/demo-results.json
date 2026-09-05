@@ -6,6 +6,7 @@
   "timezone": "America/New_York",
   "reward_to_risk": 2.0,
   "source_file": "data/sample_45m_sessions.csv",
+  "source_type": "synthetic demo data",
   "summary": {
     "trades": 1,
     "wins": 1,
@@ -29,7 +30,10 @@
       "target": 160.0,
       "outcome": "win",
       "r_multiple": 2.0,
-      "entry_timestamp": "2026-09-01T10:45:00-04:00"
+      "entry_timestamp": "2026-09-01T10:45:00-04:00",
+      "analysis_window_start": "2026-09-01T10:00:00-04:00",
+      "analysis_window_end": "2026-09-01T11:00:00-04:00",
+      "analysis_candle_count": 5
     },
     {
       "date": "2026-09-02",
@@ -45,7 +49,10 @@
       "target": null,
       "outcome": "no_setup",
       "r_multiple": 0.0,
-      "entry_timestamp": null
+      "entry_timestamp": null,
+      "analysis_window_start": "2026-09-02T10:00:00-04:00",
+      "analysis_window_end": "2026-09-02T11:00:00-04:00",
+      "analysis_candle_count": 5
     },
     {
       "date": "2026-09-03",
@@ -61,7 +68,19 @@
       "target": null,
       "outcome": "no_setup",
       "r_multiple": 0.0,
-      "entry_timestamp": null
+      "entry_timestamp": null,
+      "analysis_window_start": "2026-09-03T10:00:00-04:00",
+      "analysis_window_end": "2026-09-03T11:00:00-04:00",
+      "analysis_candle_count": 5
     }
+  ],
+  "market_events": [
+    {"time":"08:45","label":"pre_open","liquidity_reference":"anchor_low","liquidity_event":"sell_side_reference_taken","break_direction":"none","structure":"bearish","displacement":false,"confirmation":"none","status":"observed"},
+    {"time":"09:45","label":"anchor","liquidity_reference":"anchor_range","liquidity_event":"anchor_set","break_direction":"none","structure":"neutral","displacement":false,"confirmation":"none","status":"observed"},
+    {"time":"10:45","label":"reaction","liquidity_reference":"anchor_high","liquidity_event":"buy_side_reference_taken","break_direction":"bullish","structure":"bullish","displacement":true,"confirmation":"bullish","status":"observed"},
+    {"time":"11:45","label":"follow_through","liquidity_reference":"none","liquidity_event":"none","break_direction":"none","structure":"neutral","displacement":false,"confirmation":"none","status":"missing"},
+    {"time":"12:45","label":"midday","liquidity_reference":"none","liquidity_event":"none","break_direction":"none","structure":"neutral","displacement":false,"confirmation":"none","status":"missing"},
+    {"time":"13:45","label":"afternoon","liquidity_reference":"none","liquidity_event":"none","break_direction":"none","structure":"neutral","displacement":false,"confirmation":"none","status":"missing"},
+    {"time":"15:45","label":"pre_close","liquidity_reference":"none","liquidity_event":"none","break_direction":"none","structure":"neutral","displacement":false,"confirmation":"none","status":"missing"}
   ]
 }
