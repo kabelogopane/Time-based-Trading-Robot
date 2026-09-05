@@ -4,6 +4,9 @@ project:
   mode: research
 
 model:
+  measurement: candles
+  bar_interval_minutes: 1
+  candles_per_window: 45
   interval_minutes: 45
   primary_anchor: "09:45"
   windows:
@@ -19,6 +22,7 @@ signal:
   require_confirmation: true
   allow_neutral: true
   use_liquidity: true
+  liquidity_required: false
   use_displacement: true
   use_market_structure: true
 
