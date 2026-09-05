@@ -1,6 +1,7 @@
 import pandas as pd
 
 from backtest.engine import evaluate_trade
+from backtest.performance import by_direction, by_entry_window, summary
 from backtest.session import run_session
 from data.loader import load_ohlcv_csv
 from strategy.anchor import detect_anchor
@@ -70,3 +71,41 @@ def test_session_keeps_first_break_and_records_setup_outcome():
     assert result.first_confirmation == "bullish"
     assert result.outcome == "win"
     assert result.r_multiple == 2.0
+
+
+def test_performance_summary():
+    results = [
+        evaluate_trade("long", 100, 99, 102, highs=[102], lows=[100]),
+        evaluate_trade("short", 100, 101, 98, highs=[101], lows=[99]),
+        evaluate_trade("long", 100, 99, 102, highs=[99], lows=[98]),
+    ]
+    stats = summary(results)
+    assert stats["trades"] == 3
+    assert stats["wins"] == 2
+    assert stats["losses"] == 1
+    assert stats["net_r"] == 3.0
+    assert stats["profit_factor"] == 4.0
+    assert stats["max_drawdown_r"] == 1.0
+    assert stats["longest_win_streak"] == 2
+    assert stats["longest_loss_streak"] == 1
+
+
+def test_performance_breakdowns():
+    results = [
+        evaluate_trade("long", 100, 99, 102, highs=[102], lows=[100]),
+        evaluate_trade("short", 100, 101, 98, highs=[100], lows=[98]),
+    ]
+    directions = by_direction(results)
+    assert directions["long"]["wins"] == 1
+    assert directions["short"]["wins"] == 1
+
+    session = run_session(pd.DataFrame([
+        {"timestamp": "2026-09-01 09:45", "open": 102, "high": 105, "low": 100, "close": 104},
+        {"timestamp": "2026-09-01 10:00", "open": 104, "high": 108, "low": 103, "close": 107},
+        {"timestamp": "2026-09-01 10:15", "open": 107, "high": 111, "low": 106, "close": 110},
+        {"timestamp": "2026-09-01 10:30", "open": 110, "high": 116, "low": 109, "close": 115},
+        {"timestamp": "2026-09-01 11:00", "open": 115, "high": 125, "low": 114, "close": 124},
+    ]))
+    assert session is not None
+    windows = by_entry_window([session])
+    assert "10:00" in windows
