@@ -11,7 +11,7 @@
     <div>
       <p class="eyebrow">RESEARCH TERMINAL</p>
       <h1>45-Minute Time-Based Robot</h1>
-      <p class="subtitle">Time decides WHEN · Price decides WHAT · Liquidity decides WHERE</p>
+      <p class="subtitle">U.S. Eastern Time · Time decides WHEN · Price decides WHAT · Liquidity decides WHERE</p>
     </div>
     <div class="status"><span class="dot"></span> PAPER / RESEARCH MODE</div>
   </header>
@@ -21,7 +21,7 @@
       <div class="card-head">
         <div>
           <h2>TradingView Chart</h2>
-          <p>Use TradingView for chart viewing. The robot does not place orders.</p>
+          <p>Chart view only. The robot does not place orders.</p>
         </div>
         <a class="button" href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Open TradingView</a>
       </div>
@@ -31,17 +31,17 @@
     </section>
 
     <aside class="card robot-card">
-      <div class="card-head"><h2>Robot Monitor</h2><span id="clock">--:--</span></div>
+      <div class="card-head"><h2>Robot Monitor</h2><span id="clock">--:-- ET</span></div>
       <div class="metric"><span>Current window</span><strong id="window">--</strong></div>
       <div class="metric"><span>09:45 anchor</span><strong id="anchor">Waiting for data</strong></div>
       <div class="metric"><span>Structure</span><strong id="structure">Neutral</strong></div>
       <div class="metric"><span>Displacement</span><strong id="displacement">Not checked</strong></div>
       <div class="decision" id="decision">WAITING FOR MARKET DATA</div>
-      <p class="note">This screen is for research and paper simulation only. It does not send orders to a broker.</p>
+      <p class="note">Research and paper simulation only. No broker orders are sent.</p>
     </aside>
 
     <section class="card timeline-card">
-      <div class="card-head"><h2>Model Timeline</h2><span>SAST</span></div>
+      <div class="card-head"><h2>Model Timeline</h2><span>U.S. EASTERN TIME</span></div>
       <div class="timeline" id="timeline"></div>
     </section>
   </main>
@@ -51,7 +51,7 @@
     "autosize": true,
     "symbol": "OANDA:NAS100USD",
     "interval": "15",
-    "timezone": "Africa/Johannesburg",
+    "timezone": "America/New_York",
     "theme": "dark",
     "style": "1",
     "locale": "en",
