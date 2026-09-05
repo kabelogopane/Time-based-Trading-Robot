@@ -1,6 +1,6 @@
 project:
   name: Time-Based Trading Robot
-  timezone: Africa/Johannesburg
+  timezone: America/New_York
   mode: research
 
 model:
