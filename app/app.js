@@ -43,6 +43,22 @@ function renderSummary(data) {
   const table = document.querySelector("#sessionRows");
   if (table) table.innerHTML = rows || `<tr><td colspan="7">No research sessions found.</td></tr>`;
 
+  const eventRows = (data.market_events || []).map((event) => `
+    <tr>
+      <td>${event.time}</td>
+      <td>${event.label}</td>
+      <td>${event.liquidity_reference}</td>
+      <td>${event.liquidity_event}</td>
+      <td>${event.break_direction}</td>
+      <td>${event.structure}</td>
+      <td>${event.displacement ? "yes" : "no"}</td>
+      <td>${event.confirmation}</td>
+      <td>${event.status}</td>
+    </tr>
+  `).join("");
+  const eventTable = document.querySelector("#eventRows");
+  if (eventTable) eventTable.innerHTML = eventRows || `<tr><td colspan="9">No market events found.</td></tr>`;
+
   const firstTrade = (data.sessions || []).find(item => item.outcome !== "no_setup");
   if (firstTrade) {
     setText("#decision", `RESEARCH: ${firstTrade.outcome.toUpperCase()} · ${firstTrade.first_confirmation.toUpperCase()} SETUP`);
