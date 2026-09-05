@@ -2,8 +2,9 @@ const modelTimes = ["08:45","09:45","10:45","11:45","12:45","13:45","15:45"];
 const labels = ["Pre-open","Anchor","Reaction","Follow-through","Midday","Afternoon","Pre-close"];
 const timezone = "America/New_York";
 
-// DEMO SESSION: this is sample data used to make the rule engine visible.
-// Replace it with validated historical OHLC data in the backtest pipeline.
+// The browser UI is intentionally research-only. Until a validated data API is
+// added, market values shown here are explicitly DEMO values and must never be
+// interpreted as live robot signals.
 const demoMarket = {
   anchor: { high: 19842.0, low: 19782.0, close: 19830.0 },
   price: 19858.0,
@@ -14,30 +15,32 @@ const demoMarket = {
   liquidity: "buy-side nearby"
 };
 
-function minutes(hhmm){const [h,m]=hhmm.split(":").map(Number);return h*60+m;}
+function minutes(hhmm) {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
 
-function getNewYorkTime(){
-  const now = new Date();
-  return new Intl.DateTimeFormat("en-US",{
+function getNewYorkTime() {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false
-  }).format(now);
+  }).format(new Date());
 }
 
-function setText(id, value){
+function setText(id, value) {
   const element = document.querySelector(id);
   if (element) element.textContent = value;
 }
 
-function priceState(price, anchor){
+function priceState(price, anchor) {
   if (price > anchor.high) return "Above anchor";
   if (price < anchor.low) return "Below anchor";
   return "Inside anchor";
 }
 
-function evaluateDemo(){
+function evaluateDemo() {
   const state = priceState(demoMarket.price, demoMarket.anchor);
   const bullishConfirmed = state === "Above anchor" && demoMarket.structure === "bullish" && demoMarket.displacement;
   const bearishConfirmed = state === "Below anchor" && demoMarket.structure === "bearish" && demoMarket.displacement;
@@ -71,27 +74,29 @@ function evaluateDemo(){
     setText("#target", target.toFixed(2));
   } else {
     setText("#decision", "DEMO: WAIT FOR CONFIRMATION");
-    ["#direction","#entry","#invalidation","#target"].forEach(id => setText(id, "--"));
+    ["#direction", "#entry", "#invalidation", "#target"].forEach(id => setText(id, "--"));
   }
 }
 
-function updateClock(){
+function updateClock() {
   const current = getNewYorkTime();
   setText("#clock", `${current} ET`);
   const currentMinutes = minutes(current);
   let active = -1;
-  modelTimes.forEach((t,i)=>{if(currentMinutes>=minutes(t)) active=i;});
-  setText("#window", active>=0 ? `${modelTimes[active]} ET — ${labels[active]}` : "Before model window");
-  document.querySelectorAll(".time").forEach((el,i)=>{
-    el.classList.toggle("active",i===active);
-    el.classList.toggle("past",i<active);
+  modelTimes.forEach((t, i) => {
+    if (currentMinutes >= minutes(t)) active = i;
+  });
+  setText("#window", active >= 0 ? `${modelTimes[active]} ET — ${labels[active]}` : "Before model window");
+  document.querySelectorAll(".time").forEach((el, i) => {
+    el.classList.toggle("active", i === active);
+    el.classList.toggle("past", i < active);
   });
 }
 
-document.querySelector("#timeline").innerHTML=modelTimes.map((t,i)=>
+document.querySelector("#timeline").innerHTML = modelTimes.map((t, i) =>
   `<div class="time"><strong>${t}</strong><span>${labels[i]}</span></div>`
 ).join("");
 
 updateClock();
 evaluateDemo();
-setInterval(updateClock,15000);
+setInterval(updateClock, 15000);
