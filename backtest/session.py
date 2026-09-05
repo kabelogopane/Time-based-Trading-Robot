@@ -8,12 +8,14 @@ import pandas as pd
 
 from backtest.engine import TradeResult, evaluate_trade
 from strategy.anchor import detect_anchor
+from strategy.candle_windows import forward_candle_window
 from strategy.displacement import has_displacement
 from strategy.market_structure import structure_state
 from strategy.targets import rr_target
 
 SESSION_START = "08:45"
 SESSION_END = "15:45"
+CANDLES_PER_WINDOW = 45
 
 
 @dataclass(frozen=True)
@@ -32,6 +34,9 @@ class SessionObservation:
     outcome: str
     r_multiple: float
     entry_timestamp: str | None
+    analysis_window_start: str | None
+    analysis_window_end: str | None
+    analysis_candle_count: int
 
 
 def _session_slice(candles: pd.DataFrame) -> pd.DataFrame:
@@ -42,14 +47,14 @@ def _session_slice(candles: pd.DataFrame) -> pd.DataFrame:
     return local[(times >= SESSION_START) & (times <= SESSION_END)].copy()
 
 
-def _empty_observation(anchor) -> SessionObservation:
+def _empty_observation(anchor, window: pd.DataFrame) -> SessionObservation:
     return SessionObservation(
         date=str(anchor.timestamp.date()),
         anchor_high=anchor.high,
         anchor_low=anchor.low,
         anchor_close=anchor.close,
-        post_anchor_high=anchor.high,
-        post_anchor_low=anchor.low,
+        post_anchor_high=float(window["high"].max()) if not window.empty else anchor.high,
+        post_anchor_low=float(window["low"].min()) if not window.empty else anchor.low,
         first_break="none",
         first_confirmation="none",
         entry=None,
@@ -58,12 +63,15 @@ def _empty_observation(anchor) -> SessionObservation:
         outcome="no_setup",
         r_multiple=0.0,
         entry_timestamp=None,
+        analysis_window_start=(window["timestamp"].iloc[0].isoformat() if not window.empty else None),
+        analysis_window_end=(window["timestamp"].iloc[-1].isoformat() if not window.empty else None),
+        analysis_candle_count=len(window),
     )
 
 
-def _evaluate_setup(candles: pd.DataFrame, entry_timestamp: pd.Timestamp, direction: str, entry: float, invalidation: float, target: float) -> TradeResult:
-    """Evaluate only candles after the entry candle to avoid same-bar lookahead."""
-    future = candles[candles["timestamp"] > entry_timestamp]
+def _evaluate_setup(window: pd.DataFrame, entry_timestamp: pd.Timestamp, direction: str, entry: float, invalidation: float, target: float) -> TradeResult:
+    """Evaluate only candles after the entry candle inside the model window."""
+    future = window[window["timestamp"] > entry_timestamp]
     return evaluate_trade(
         direction,
         entry,
@@ -77,10 +85,11 @@ def _evaluate_setup(candles: pd.DataFrame, entry_timestamp: pd.Timestamp, direct
 def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObservation | None:
     """Analyze one New York session without placing a real order.
 
-    The 09:45 ET candle is the anchor. The first close outside the anchor
-    range is recorded once. A setup requires matching market structure and
-    candle displacement. This is a testable research hypothesis, not a claim
-    about a hidden market algorithm.
+    The 09:45 ET candle is the anchor. From that checkpoint, the model now
+    examines the next 45 candles as one explicit candle-count window. The
+    first close outside the anchor range is recorded once. A setup requires
+    matching market structure and candle displacement. This is a testable
+    research hypothesis, not a claim about a hidden market algorithm.
     """
     candles = frame.copy()
     candles["timestamp"] = pd.to_datetime(candles["timestamp"])
@@ -89,9 +98,9 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
     if anchor is None:
         return None
 
-    post = candles[candles["timestamp"] > pd.Timestamp(anchor.timestamp)].copy()
+    post = forward_candle_window(candles, pd.Timestamp(anchor.timestamp), CANDLES_PER_WINDOW)
     if post.empty:
-        return _empty_observation(anchor)
+        return _empty_observation(anchor, post)
 
     post_anchor_high = float(post["high"].max())
     post_anchor_low = float(post["low"].min())
@@ -102,7 +111,7 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
     outcome = "no_setup"
     r_multiple = 0.0
 
-    for _, row in post.iterrows():
+    for index, (_, row) in enumerate(post.iterrows()):
         close = float(row["close"])
         if first_break == "none":
             if close > anchor.high:
@@ -111,10 +120,8 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
                 first_break = "bearish"
             else:
                 continue
-        elif first_break not in {"bullish", "bearish"}:
-            continue
 
-        history = post[post["timestamp"] <= row["timestamp"]].tail(4)
+        history = post.iloc[: index + 1].tail(4)
         structure = structure_state(history, lookback=3)
         displaced = has_displacement(row)
         confirmed = (
@@ -131,7 +138,7 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
         direction = "long" if first_break == "bullish" else "short"
         target = rr_target(entry, invalidation, reward_to_risk, direction)
         entry_timestamp = pd.Timestamp(row["timestamp"])
-        result = _evaluate_setup(candles, entry_timestamp, direction, entry, invalidation, target)
+        result = _evaluate_setup(post, entry_timestamp, direction, entry, invalidation, target)
         outcome = result.outcome
         r_multiple = result.r_multiple
         break
@@ -151,6 +158,9 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
         outcome=outcome,
         r_multiple=r_multiple,
         entry_timestamp=entry_timestamp.isoformat() if entry_timestamp is not None else None,
+        analysis_window_start=post["timestamp"].iloc[0].isoformat(),
+        analysis_window_end=post["timestamp"].iloc[-1].isoformat(),
+        analysis_candle_count=len(post),
     )
 
 
