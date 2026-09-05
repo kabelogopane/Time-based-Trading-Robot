@@ -10,7 +10,7 @@ from backtest.engine import TradeResult, evaluate_trade
 from strategy.anchor import detect_anchor
 from strategy.candle_windows import forward_candle_window
 from strategy.displacement import has_displacement
-from strategy.market_structure import structure_state
+from strategy.market_structure import classify_structure
 from strategy.targets import rr_target
 
 SESSION_START = "08:45"
@@ -82,13 +82,27 @@ def _evaluate_setup(window: pd.DataFrame, entry_timestamp: pd.Timestamp, directi
     )
 
 
+def _anchor_relative_structure(anchor, row: pd.Series) -> str:
+    """Classify the current candle relative to the 09:45 anchor range.
+
+    This is deliberately a simple, reproducible research proxy. It is not a
+    full ICT swing-high/swing-low detector.
+    """
+    return classify_structure(
+        float(anchor.high),
+        float(anchor.low),
+        float(row["high"]),
+        float(row["low"]),
+    )
+
+
 def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObservation | None:
     """Analyze one New York session without placing a real order.
 
     The 09:45 ET candle is the anchor. From that checkpoint, the model now
     examines the next 45 candles as one explicit candle-count window. The
     first close outside the anchor range is recorded once. A setup requires
-    matching market structure and candle displacement. This is a testable
+    anchor-relative structure and candle displacement. This is a testable
     research hypothesis, not a claim about a hidden market algorithm.
     """
     candles = frame.copy()
@@ -111,7 +125,7 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
     outcome = "no_setup"
     r_multiple = 0.0
 
-    for index, (_, row) in enumerate(post.iterrows()):
+    for _, row in post.iterrows():
         close = float(row["close"])
         if first_break == "none":
             if close > anchor.high:
@@ -121,8 +135,7 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
             else:
                 continue
 
-        history = post.iloc[: index + 1].tail(4)
-        structure = structure_state(history, lookback=3)
+        structure = _anchor_relative_structure(anchor, row)
         displaced = has_displacement(row)
         confirmed = (
             first_break == "bullish" and structure == "bullish" and displaced
