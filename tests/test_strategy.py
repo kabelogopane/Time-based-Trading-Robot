@@ -62,7 +62,7 @@ def test_session_keeps_first_break_and_records_setup_outcome():
         {"timestamp": "2026-09-01 10:15", "open": 107, "high": 111, "low": 106, "close": 110, "volume": 1000},
         {"timestamp": "2026-09-01 10:30", "open": 110, "high": 116, "low": 109, "close": 115, "volume": 1000},
         {"timestamp": "2026-09-01 10:45", "open": 115, "high": 121, "low": 114, "close": 120, "volume": 1000},
-        {"timestamp": "2026-09-01 11:00", "open": 120, "high": 135, "low": 119, "close": 132, "volume": 1000},
+        {"timestamp": "2026-09-01 11:00", "open": 120, "high": 165, "low": 119, "close": 160, "volume": 1000},
     ])
     result = run_session(frame)
     assert result is not None
