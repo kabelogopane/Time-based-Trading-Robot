@@ -5,6 +5,7 @@ from backtest.performance import by_direction, by_entry_window, summary
 from backtest.session import run_session
 from data.loader import load_ohlcv_csv
 from strategy.anchor import detect_anchor
+from strategy.candle_windows import forward_candle_window
 from strategy.displacement import has_displacement
 from strategy.market_structure import structure_state
 from strategy.targets import rr_target
@@ -54,6 +55,37 @@ def test_loader_normalizes_naive_timestamps_to_new_york(tmp_path):
     ]).to_csv(path, index=False)
     frame = load_ohlcv_csv(path)
     assert str(frame["timestamp"].dt.tz) == "America/New_York"
+
+
+def test_forward_window_uses_candle_count_not_clock_minutes():
+    frame = pd.DataFrame([
+        {"timestamp": f"2026-09-01 10:{minute:02d}", "open": 100, "high": 101, "low": 99, "close": 100, "volume": 1}
+        for minute in range(0, 10)
+    ])
+    window = forward_candle_window(frame, pd.Timestamp("2026-09-01 09:45"), candles_per_window=3)
+    assert len(window) == 3
+    assert window["timestamp"].iloc[0].strftime("%H:%M") == "10:00"
+    assert window["timestamp"].iloc[-1].strftime("%H:%M") == "10:02"
+
+
+def test_session_uses_45_candle_window_metadata():
+    rows = [
+        {"timestamp": "2026-09-01 09:45", "open": 102, "high": 105, "low": 100, "close": 104, "volume": 1000},
+    ]
+    for minute in range(46):
+        rows.append({
+            "timestamp": pd.Timestamp("2026-09-01 10:00") + pd.Timedelta(minutes=minute),
+            "open": 104 + minute,
+            "high": 105 + minute,
+            "low": 103 + minute,
+            "close": 104.5 + minute,
+            "volume": 1000,
+        })
+    result = run_session(pd.DataFrame(rows))
+    assert result is not None
+    assert result.analysis_candle_count == 45
+    assert result.analysis_window_start.endswith("10:00:00")
+    assert result.analysis_window_end.endswith("10:44:00")
 
 
 def test_session_keeps_first_break_and_records_setup_outcome():
