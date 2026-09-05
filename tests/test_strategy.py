@@ -8,6 +8,7 @@ from strategy.anchor import detect_anchor
 from strategy.displacement import has_displacement
 from strategy.market_structure import structure_state
 from strategy.targets import rr_target
+from strategy.time_windows import candle_window_duration, expected_candle_count
 
 
 def sample_candles():
@@ -109,3 +110,13 @@ def test_performance_breakdowns():
     assert session is not None
     windows = by_entry_window([session])
     assert "10:00" in windows
+
+
+def test_original_model_is_45_candles_on_one_minute_bars():
+    assert expected_candle_count(45, 1) == 45
+    assert candle_window_duration(45, 1).total_seconds() == 45 * 60
+
+
+def test_45_candles_on_15_minute_bars_is_not_45_minutes():
+    assert expected_candle_count(45, 15) == 3
+    assert candle_window_duration(45, 15).total_seconds() == 45 * 15 * 60
