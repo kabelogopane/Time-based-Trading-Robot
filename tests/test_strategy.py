@@ -1,12 +1,12 @@
-from datetime import datetime
-
 import pandas as pd
 
+from backtest.engine import evaluate_trade
+from backtest.session import run_session
+from data.loader import load_ohlcv_csv
 from strategy.anchor import detect_anchor
 from strategy.displacement import has_displacement
 from strategy.market_structure import structure_state
 from strategy.targets import rr_target
-from backtest.engine import evaluate_trade
 
 
 def sample_candles():
@@ -41,5 +41,32 @@ def test_two_to_one_target_for_long():
 
 def test_target_hit_returns_win():
     result = evaluate_trade("long", 104, 100, 112, highs=[108, 113], lows=[103, 106])
+    assert result.outcome == "win"
+    assert result.r_multiple == 2.0
+
+
+def test_loader_normalizes_naive_timestamps_to_new_york(tmp_path):
+    path = tmp_path / "data.csv"
+    pd.DataFrame([
+        {"timestamp": "2026-09-01 09:45", "open": 100, "high": 105, "low": 99, "close": 104, "volume": 1000},
+    ]).to_csv(path, index=False)
+    frame = load_ohlcv_csv(path)
+    assert str(frame["timestamp"].dt.tz) == "America/New_York"
+
+
+def test_session_keeps_first_break_and_records_setup_outcome():
+    frame = pd.DataFrame([
+        {"timestamp": "2026-09-01 08:45", "open": 100, "high": 104, "low": 98, "close": 102, "volume": 1000},
+        {"timestamp": "2026-09-01 09:45", "open": 102, "high": 105, "low": 100, "close": 104, "volume": 1000},
+        {"timestamp": "2026-09-01 10:00", "open": 104, "high": 108, "low": 103, "close": 107, "volume": 1000},
+        {"timestamp": "2026-09-01 10:15", "open": 107, "high": 111, "low": 106, "close": 110, "volume": 1000},
+        {"timestamp": "2026-09-01 10:30", "open": 110, "high": 116, "low": 109, "close": 115, "volume": 1000},
+        {"timestamp": "2026-09-01 10:45", "open": 115, "high": 121, "low": 114, "close": 120, "volume": 1000},
+        {"timestamp": "2026-09-01 11:00", "open": 120, "high": 135, "low": 119, "close": 132, "volume": 1000},
+    ])
+    result = run_session(frame)
+    assert result is not None
+    assert result.first_break == "bullish"
+    assert result.first_confirmation == "bullish"
     assert result.outcome == "win"
     assert result.r_multiple == 2.0
