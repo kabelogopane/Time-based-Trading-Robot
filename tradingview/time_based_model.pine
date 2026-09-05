@@ -1,0 +1,28 @@
+//@version=6
+indicator("45-Minute Time-Based Model", overlay=true, max_lines_count=20, max_labels_count=20)
+
+// Educational visual aid for the user's original time-based model.
+// This script marks the 09:45 New York anchor and its high/low.
+// It does not place trades or connect to a broker.
+
+string tz = input.string("America/New_York", "Model timezone")
+string anchor = input.string("0945-0946", "Anchor window")
+
+inAnchor = not na(time(timeframe.period, anchor, tz))
+newAnchor = inAnchor and not inAnchor[1]
+
+var float anchorHigh = na
+var float anchorLow = na
+
+if newAnchor
+    anchorHigh := high
+    anchorLow := low
+else if inAnchor
+    anchorHigh := math.max(anchorHigh, high)
+    anchorLow := math.min(anchorLow, low)
+
+plot(anchorHigh, "09:45 Anchor High", color=color.new(color.green, 0), linewidth=2, style=plot.style_stepline)
+plot(anchorLow, "09:45 Anchor Low", color=color.new(color.red, 0), linewidth=2, style=plot.style_stepline)
+
+if newAnchor
+    label.new(bar_index, high, "09:45 ET\nANCHOR", style=label.style_label_down, textcolor=color.white, color=color.new(color.blue, 0))
