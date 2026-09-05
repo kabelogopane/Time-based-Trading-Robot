@@ -34,15 +34,44 @@
       <div class="card-head"><h2>Robot Monitor</h2><span id="clock">--:-- ET</span></div>
       <div class="metric"><span>Current window</span><strong id="window">--</strong></div>
       <div class="metric"><span>09:45 anchor</span><strong id="anchor">Waiting for data</strong></div>
+      <div class="metric"><span>Anchor range</span><strong id="anchorRange">--</strong></div>
+      <div class="metric"><span>Price state</span><strong id="priceState">Waiting</strong></div>
       <div class="metric"><span>Structure</span><strong id="structure">Neutral</strong></div>
       <div class="metric"><span>Displacement</span><strong id="displacement">Not checked</strong></div>
+      <div class="metric"><span>Liquidity</span><strong id="liquidity">Not checked</strong></div>
       <div class="decision" id="decision">WAITING FOR MARKET DATA</div>
-      <p class="note">Research and paper simulation only. No broker orders are sent.</p>
+      <p class="note">DEMO logic only. No broker orders are sent and no real-money execution is connected.</p>
     </aside>
 
     <section class="card timeline-card">
       <div class="card-head"><h2>Model Timeline</h2><span>U.S. EASTERN TIME</span></div>
       <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section class="card logic-card">
+      <div class="card-head">
+        <div>
+          <h2>Robot Logic</h2>
+          <p>Visible rule chain using sample research data.</p>
+        </div>
+        <span class="demo-badge">DEMO SESSION</span>
+      </div>
+      <div class="logic-grid">
+        <div class="logic-step"><span>01</span><strong>Time Anchor</strong><small>09:45 ET high/low</small></div>
+        <div class="logic-step"><span>02</span><strong>Price State</strong><small>Above / inside / below anchor</small></div>
+        <div class="logic-step"><span>03</span><strong>Structure</strong><small>Higher highs/lows or lower highs/lows</small></div>
+        <div class="logic-step"><span>04</span><strong>Displacement</strong><small>Strong candle confirmation</small></div>
+        <div class="logic-step"><span>05</span><strong>Liquidity</strong><small>Recent high/low status</small></div>
+        <div class="logic-step"><span>06</span><strong>Decision</strong><small>WAIT or CONFIRMED SETUP</small></div>
+      </div>
+      <div class="paper-setup">
+        <div><span>Direction</span><strong id="direction">--</strong></div>
+        <div><span>Entry</span><strong id="entry">--</strong></div>
+        <div><span>Invalidation</span><strong id="invalidation">--</strong></div>
+        <div><span>Target</span><strong id="target">--</strong></div>
+        <div><span>R:R</span><strong id="rr">2.0R</strong></div>
+      </div>
+      <p class="note">The robot is testing your time-based hypothesis. It is not claiming to know a hidden market algorithm.</p>
     </section>
   </main>
 
