@@ -1,0 +1,31 @@
+project:
+  name: Time-Based Trading Robot
+  timezone: Africa/Johannesburg
+  mode: research
+
+model:
+  interval_minutes: 45
+  primary_anchor: "09:45"
+  windows:
+    - "08:45"
+    - "09:45"
+    - "10:45"
+    - "11:45"
+    - "12:45"
+    - "13:45"
+    - "15:45"
+
+signal:
+  require_confirmation: true
+  allow_neutral: true
+  use_liquidity: true
+  use_displacement: true
+  use_market_structure: true
+
+risk:
+  enabled_for_backtest: true
+  max_risk_per_trade_pct: 1.0
+  max_trades_per_window: 1
+
+execution:
+  live_trading: false
