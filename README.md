@@ -46,6 +46,47 @@ The robot does **not** assume that 09:45 automatically means BUY or SELL.
 10. Evaluate the setup bar-by-bar in the backtester.
 11. Record performance in R-multiples.
 
+## Stage 4 — Regime Analysis
+
+Stage 4 is a **descriptive research layer**. It does not change the entry, invalidation, or target rules.
+
+For every 09:45 session the robot records:
+
+- Anchor range
+- Anchor-range regime: small / medium / large, using one-third and two-third sample quantiles
+- First break direction
+- First-break speed: fast (1–5 candles), medium (6–15), slow (16+), or no break
+- First-break timestamp and candle count
+- Whether a post-break **close** returned inside the anchor
+- Whether post-break closes continued away from the anchor
+- The unchanged trade outcome and R-multiple
+
+The regime summaries report sessions, closed trades, wins, losses, open trades, win rate, net R, and average R.
+
+This is intentionally not an optimization system. A regime with a high win rate but very few observations is treated as weak evidence rather than a new rule.
+
+### Run Stage 4
+
+```bash
+python run_robot.py path/to/your_data.csv --regime-analysis
+```
+
+Outputs:
+
+```text
+reports/regime_sessions.csv
+reports/regimes/anchor_range.csv
+reports/regimes/break_speed.csv
+reports/regimes/first_break.csv
+reports/regimes/path.csv
+```
+
+The analysis can be run together with the existing filter comparison:
+
+```bash
+python run_robot.py path/to/your_data.csv --regime-analysis --compare-filters
+```
+
 ## Supporting Concepts
 
 These are supporting measurements, not replacements for the original time model:
@@ -79,6 +120,7 @@ These are supporting measurements, not replacements for the original time model:
 - Conservative handling when stop and target occur in the same candle
 - Historical CSV loader and session runner
 - Session journal output
+- Stage 4 descriptive regime classification
 
 ### TradingView indicator
 - `tradingview/time_based_model.pine` marks the 09:45 ET anchor and anchor high/low.
@@ -110,6 +152,7 @@ Time-Based-Trading-Robot/
 │   ├── performance.py
 │   ├── reports.py
 │   ├── journal.py
+│   ├── regime.py
 │   ├── session.py
 │   └── time_windows.py
 ├── data/
@@ -126,6 +169,7 @@ Time-Based-Trading-Robot/
 ├── run_robot.py
 └── tests/
     ├── test_strategy.py
+    ├── test_regime.py
     └── test_time_windows.py
 ```
 
@@ -198,6 +242,6 @@ We are not claiming to know a hidden market algorithm. We are building a measura
 
 ## Status
 
-**Current stage: Phase 2 preparation — time-window engine + backtesting foundation.**
+**Current stage: Stage 4 — descriptive regime analysis implemented; awaiting the 40-session research CSV for the actual run.**
 
-**Next milestone: connect the new 45-minute window observations to liquidity, displacement, and structure measurements, then validate the complete rule set on clean historical data.**
+**Next milestone: run Stage 4 on the 40 clean sessions, inspect regime sample sizes and performance, then decide whether any regime deserves out-of-sample validation.**
