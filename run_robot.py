@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 
+from backtest.filter_comparison import compare_filters
 from backtest.journal import write_csv
 from backtest.performance import summary
 from backtest.session import run_sessions
@@ -19,6 +20,16 @@ def main() -> None:
     parser.add_argument("csv", help="Path to historical OHLCV CSV")
     parser.add_argument("--rr", type=float, default=2.0, help="Research target reward:risk")
     parser.add_argument("--output", default="reports/trade_journal.csv", help="CSV journal output path")
+    parser.add_argument(
+        "--compare-filters",
+        action="store_true",
+        help="Compare current rules with progressively stricter setup filters",
+    )
+    parser.add_argument(
+        "--comparison-output",
+        default="reports/filter_comparison.csv",
+        help="Filter comparison CSV output",
+    )
     args = parser.parse_args()
 
     candles = load_ohlcv_csv(args.csv)
@@ -37,8 +48,17 @@ def main() -> None:
     print(f"Losses: {stats['losses']}")
     print(f"Win rate: {stats['win_rate']:.2f}%")
     print(f"Net R: {stats['net_r']:.2f}")
-    print()
 
+    if args.compare_filters:
+        comparison, _ = compare_filters(candles, reward_to_risk=args.rr)
+        comparison.to_csv(args.comparison_output, index=False)
+        print()
+        print("SETUP FILTER COMPARISON")
+        print(comparison.to_string(index=False, float_format=lambda value: f"{value:.2f}"))
+        print(f"Comparison: {args.comparison_output}")
+        print("No variant is selected by win rate alone; low trade counts require more data.")
+
+    print()
     for item in observations:
         setup = item.first_confirmation if item.first_confirmation != "none" else "no confirmed setup"
         print(
