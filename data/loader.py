@@ -24,12 +24,19 @@ def _normalize_timestamps(values: pd.Series) -> pd.Series:
 
 
 def load_ohlcv_csv(path: str | Path) -> pd.DataFrame:
-    """Load, validate, sort, and timezone-normalize an OHLCV CSV."""
+    """Load, validate, sort, and timezone-normalize an OHLCV CSV.
+
+    The research dataset may use either ``timestamp`` or ``datetime`` for
+    its time column. Internally the robot always uses ``timestamp``.
+    """
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(path)
 
     frame = pd.read_csv(path)
+    if "timestamp" not in frame.columns and "datetime" in frame.columns:
+        frame = frame.rename(columns={"datetime": "timestamp"})
+
     missing = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
