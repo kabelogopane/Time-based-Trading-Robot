@@ -37,6 +37,22 @@ def test_gap_is_detected():
     assert quality.ready_for_45_candle_model is False
 
 
+def test_overnight_break_is_not_counted_as_session_gap():
+    morning = make_frame()
+    afternoon = pd.DataFrame({
+        "timestamp": pd.date_range("2026-09-02 09:45", periods=2, freq="min", tz="America/New_York"),
+        "open": [104, 105],
+        "high": [105, 106],
+        "low": [103, 104],
+        "close": [104.5, 105.5],
+        "volume": [14, 15],
+    })
+    frame = pd.concat([morning, afternoon], ignore_index=True)
+    quality = assess_quality(frame)
+    assert quality.gaps == 0
+    assert quality.ready_for_45_candle_model is True
+
+
 def test_duplicate_is_detected():
     frame = pd.concat([make_frame(), make_frame().iloc[[1]]], ignore_index=True)
     quality = assess_quality(frame)
