@@ -37,6 +37,10 @@ class SessionObservation:
     analysis_window_start: str | None
     analysis_window_end: str | None
     analysis_candle_count: int
+    first_break_timestamp: str | None = None
+    first_break_candles: int | None = None
+    returned_inside_anchor: bool = False
+    continued_away_from_anchor: bool = False
 
 
 def _session_slice(candles: pd.DataFrame) -> pd.DataFrame:
@@ -96,6 +100,49 @@ def _anchor_relative_structure(anchor, row: pd.Series) -> str:
     )
 
 
+def _regime_path_features(post: pd.DataFrame, anchor) -> tuple[str, str | None, int | None, bool, bool]:
+    """Measure first-break speed and post-break path without changing entries.
+
+    Speed is measured in candles from the 09:45 anchor to the first close
+    outside the anchor. Return/continuation are descriptive labels based on
+    subsequent closes and are independent of setup confirmation.
+    """
+    normalized = post.reset_index(drop=True)
+    break_index = None
+    first_break = "none"
+
+    for index, row in normalized.iterrows():
+        close = float(row["close"])
+        if close > anchor.high:
+            first_break = "bullish"
+            break_index = index
+            break
+        if close < anchor.low:
+            first_break = "bearish"
+            break_index = index
+            break
+
+    if break_index is None:
+        return "none", None, None, False, False
+
+    break_row = normalized.iloc[break_index]
+    first_break_timestamp = pd.Timestamp(break_row["timestamp"]).isoformat()
+    first_break_candles = break_index + 1
+    future = normalized.iloc[break_index + 1 :]
+    if future.empty:
+        return first_break, first_break_timestamp, first_break_candles, False, False
+
+    closes = future["close"].astype(float)
+    if first_break == "bullish":
+        returned_inside = bool((closes <= anchor.high).any())
+        continued_away = bool((closes > anchor.high).all())
+    else:
+        returned_inside = bool((closes >= anchor.low).any())
+        continued_away = bool((closes < anchor.low).all())
+
+    return first_break, first_break_timestamp, first_break_candles, returned_inside, continued_away
+
+
 def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObservation | None:
     """Analyze one New York session without placing a real order.
 
@@ -118,7 +165,7 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
 
     post_anchor_high = float(post["high"].max())
     post_anchor_low = float(post["low"].min())
-    first_break = "none"
+    first_break, first_break_timestamp, first_break_candles, returned_inside, continued_away = _regime_path_features(post, anchor)
     first_confirmation = "none"
     entry = invalidation = target = None
     entry_timestamp = None
@@ -134,6 +181,10 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
                 first_break = "bearish"
             else:
                 continue
+
+        # Do not allow confirmation on a candle before the first break.
+        if first_break_timestamp is None or pd.Timestamp(row["timestamp"]).isoformat() < first_break_timestamp:
+            continue
 
         structure = _anchor_relative_structure(anchor, row)
         displaced = has_displacement(row)
@@ -174,6 +225,10 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
         analysis_window_start=post["timestamp"].iloc[0].isoformat(),
         analysis_window_end=post["timestamp"].iloc[-1].isoformat(),
         analysis_candle_count=len(post),
+        first_break_timestamp=first_break_timestamp,
+        first_break_candles=first_break_candles,
+        returned_inside_anchor=returned_inside,
+        continued_away_from_anchor=continued_away,
     )
 
 
