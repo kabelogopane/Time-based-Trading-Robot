@@ -105,14 +105,13 @@ def _regime_path_features(post: pd.DataFrame, anchor) -> tuple[str, str | None, 
 
     Speed is measured in candles from the 09:45 anchor to the first close
     outside the anchor. Return/continuation are descriptive labels based on
-    subsequent closes and are independent of the setup confirmation.
+    subsequent closes and are independent of setup confirmation.
     """
-    first_break = "none"
-    first_break_timestamp = None
-    first_break_candles = None
+    normalized = post.reset_index(drop=True)
     break_index = None
+    first_break = "none"
 
-    for index, row in post.reset_index(drop=True).iterrows():
+    for index, row in normalized.iterrows():
         close = float(row["close"])
         if close > anchor.high:
             first_break = "bullish"
@@ -124,13 +123,12 @@ def _regime_path_features(post: pd.DataFrame, anchor) -> tuple[str, str | None, 
             break
 
     if break_index is None:
-        return first_break, None, None, False, False
+        return "none", None, None, False, False
 
-    break_row = post.reset_index(drop=True).iloc[break_index]
+    break_row = normalized.iloc[break_index]
     first_break_timestamp = pd.Timestamp(break_row["timestamp"]).isoformat()
     first_break_candles = break_index + 1
-    future = post.reset_index(drop=True).iloc[break_index + 1 :]
-
+    future = normalized.iloc[break_index + 1 :]
     if future.empty:
         return first_break, first_break_timestamp, first_break_candles, False, False
 
@@ -176,7 +174,16 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
 
     for _, row in post.iterrows():
         close = float(row["close"])
-        if first_confirmation == "none" and first_break == "none":
+        if first_break == "none":
+            if close > anchor.high:
+                first_break = "bullish"
+            elif close < anchor.low:
+                first_break = "bearish"
+            else:
+                continue
+
+        # Do not allow confirmation on a candle before the first break.
+        if first_break_timestamp is None or pd.Timestamp(row["timestamp"]).isoformat() < first_break_timestamp:
             continue
 
         structure = _anchor_relative_structure(anchor, row)
