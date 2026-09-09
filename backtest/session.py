@@ -94,13 +94,7 @@ def _prepare_execution_data(candles: pd.DataFrame) -> pd.DataFrame:
 
 
 def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObservation | None:
-    """Analyze one New York session using a 45m anchor and 3m execution data.
-
-    The 09:45 ET 45-minute candle defines the higher-timeframe anchor. The
-    following 15 three-minute candles form the execution window. A setup is
-    accepted only when the research pipeline confirms liquidity sweep, market
-    structure, displacement, and FVG retest confluence.
-    """
+    """Analyze one New York session using a 45m anchor and 3m execution data."""
     raw = _session_slice(frame).sort_values("timestamp").reset_index(drop=True)
     if raw.empty:
         return None
@@ -136,12 +130,10 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
         direction = signal.direction
         invalidation = anchor.low if direction == "long" else anchor.high
         target = rr_target(entry, invalidation, reward_to_risk, direction)
-        matching = post[post["close"] == entry]
-        if not matching.empty:
-            entry_timestamp = pd.Timestamp(matching.iloc[0]["timestamp"])
-            result = _evaluate_setup(post, entry_timestamp, direction, entry, invalidation, target)
-            outcome = result.outcome
-            r_multiple = result.r_multiple
+        entry_timestamp = pd.Timestamp(signal.entry_timestamp)
+        result = _evaluate_setup(post, entry_timestamp, direction, entry, invalidation, target)
+        outcome = result.outcome
+        r_multiple = result.r_multiple
 
     return SessionObservation(
         date=str(anchor.timestamp.date()),
