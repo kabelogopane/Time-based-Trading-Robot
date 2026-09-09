@@ -2,54 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050912">
   <meta name="description" content="Time-Based Trading Robot research and backtesting terminal.">
-  <title>Time-Based Research Terminal</title>
+  <title>Time-Based Trading Robot</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="side-brand">
-        <div class="brand-mark">TB</div>
-        <div><b>TIME-BASED</b><span>RESEARCH LAB</span></div>
+        <div class="brand-mark" aria-hidden="true">TB</div>
+        <div>
+          <b>TIME-BASED</b>
+          <span>TRADING ROBOT</span>
+        </div>
       </div>
-      <div class="side-section">
+
+      <nav class="side-section" aria-label="Workspace">
         <span class="side-label">WORKSPACE</span>
         <a class="side-link active" href="#dashboard"><span>⌂</span> Dashboard</a>
         <a class="side-link" href="#events"><span>◈</span> Event Map</a>
         <a class="side-link" href="#sessions"><span>▤</span> Sessions</a>
         <a class="side-link" href="#logic"><span>◎</span> Model Logic</a>
-      </div>
+      </nav>
+
       <div class="side-section">
-        <span class="side-label">MODEL</span>
+        <span class="side-label">ROBOT CONFIG</span>
         <div class="side-stat"><span>Timezone</span><b>New York / ET</b></div>
         <div class="side-stat"><span>Anchor</span><b>09:45</b></div>
         <div class="side-stat"><span>Window</span><b>45 candles</b></div>
+        <div class="side-stat"><span>Execution</span><b>Disabled</b></div>
       </div>
+
       <div class="side-bottom">
-        <div class="research-badge"><i></i><div><b>PAPER MODE</b><span>No live orders</span></div></div>
-        <small>Research build · Phase 2</small>
+        <div class="research-badge">
+          <i aria-hidden="true"></i>
+          <div><b>PAPER MODE</b><span>No live orders</span></div>
+        </div>
+        <small>Research build · Historical simulation</small>
       </div>
     </aside>
 
     <main id="dashboard" class="content">
       <header class="topbar">
-        <div class="mobile-brand"><div class="brand-mark">TB</div><b>45-Candle Model</b></div>
-        <div class="top-actions"><span class="connection"><i></i> ENGINE READY</span><span class="paper-pill">PAPER / RESEARCH</span></div>
+        <div class="mobile-brand">
+          <div class="brand-mark" aria-hidden="true">TB</div>
+          <div><b>Time-Based Robot</b><span>Research Terminal</span></div>
+        </div>
+        <div class="top-actions">
+          <span class="connection"><i aria-hidden="true"></i> ENGINE READY</span>
+          <span class="paper-pill">PAPER / RESEARCH</span>
+        </div>
       </header>
 
       <div class="shell">
         <section class="hero-row">
-          <div>
-            <p class="eyebrow">MODEL CONTROL CENTER</p>
+          <div class="hero-copy-block">
+            <p class="eyebrow">ROBOT CONTROL CENTER</p>
             <h1>New York Session Monitor</h1>
-            <p class="muted hero-copy">Time decides <b>WHEN</b> · Price decides <b>WHAT</b> · Liquidity decides <b>WHERE</b></p>
+            <p class="muted">Time decides <b>WHEN</b> · Price decides <b>WHAT</b> · Liquidity decides <b>WHERE</b></p>
           </div>
-          <div class="clock-box"><span>NEW YORK TIME</span><strong id="clock">--:-- ET</strong><small id="window">--</small></div>
+          <div class="clock-box">
+            <span>NEW YORK TIME</span>
+            <strong id="clock">--:-- ET</strong>
+            <small id="window">--</small>
+          </div>
         </section>
 
-        <section class="kpi-grid">
+        <section class="robot-banner" aria-label="Robot status">
+          <div class="robot-avatar" aria-hidden="true">TB</div>
+          <div class="robot-copy">
+            <strong>TIME-BASED TRADING ROBOT</strong>
+            <span>Research engine is connected to the dashboard. Historical results are shown in paper mode.</span>
+          </div>
+          <div class="robot-state"><i aria-hidden="true"></i><b>READY</b></div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Research summary">
           <div class="kpi"><div class="kpi-icon">◷</div><div><span>Sessions</span><strong id="sessionCount">--</strong><small>research days</small></div></div>
           <div class="kpi"><div class="kpi-icon">↗</div><div><span>Closed trades</span><strong id="tradeCount">--</strong><small>paper results</small></div></div>
           <div class="kpi"><div class="kpi-icon">%</div><div><span>Win rate</span><strong id="winRate">--</strong><small>historical dataset</small></div></div>
@@ -65,13 +95,27 @@
 
         <section class="main-grid">
           <section class="panel chart-panel">
-            <div class="panel-head"><div><span class="section-label">PRICE VIEW</span><h2>Market Chart</h2></div><a class="button" href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Open Chart ↗</a></div>
-            <div class="chart"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div>
+            <div class="panel-head">
+              <div><span class="section-label">PRICE VIEW</span><h2>Market Chart</h2></div>
+              <a class="button" href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Open Chart ↗</a>
+            </div>
+            <div class="chart">
+              <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+              </div>
+            </div>
           </section>
 
           <aside class="panel state-panel">
-            <div class="panel-head"><div><span class="section-label">ENGINE STATE</span><h2>Market State</h2></div><span class="live-tag">RESEARCH</span></div>
-            <div class="state-hero"><span>MODEL DECISION</span><strong id="decision">LOADING RESEARCH RESULTS</strong><small id="dataSource">Loading Python research dataset...</small></div>
+            <div class="panel-head">
+              <div><span class="section-label">ENGINE STATE</span><h2>Market State</h2></div>
+              <span class="live-tag">RESEARCH</span>
+            </div>
+            <div class="state-hero">
+              <span>MODEL DECISION</span>
+              <strong id="decision">LOADING RESEARCH RESULTS</strong>
+              <small id="dataSource">Loading Python research dataset...</small>
+            </div>
             <div class="state-list">
               <div><span>Anchor</span><strong id="anchorState">09:45 · SET</strong></div>
               <div><span>Break</span><strong id="breakState">--</strong></div>
@@ -102,15 +146,28 @@
 
         <section id="events" class="panel">
           <div class="panel-head"><div><span class="section-label">OBSERVABLE PRICE EVENTS</span><h2>Market Event Map</h2></div><span class="live-tag">PYTHON ENGINE</span></div>
-          <div class="table-wrap"><table><thead><tr><th>Time</th><th>Model</th><th>Liquidity</th><th>Event</th><th>Break</th><th>Structure</th><th>Displacement</th><th>Confirmation</th></tr></thead><tbody id="eventRows"></tbody></table></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Time</th><th>Model</th><th>Liquidity</th><th>Event</th><th>Break</th><th>Structure</th><th>Displacement</th><th>Confirmation</th></tr></thead>
+              <tbody id="eventRows"></tbody>
+            </table>
+          </div>
         </section>
 
         <section id="sessions" class="panel">
           <div class="panel-head"><div><span class="section-label">HISTORICAL RESULTS</span><h2>Session Replay Data</h2></div><span id="sessionDataLabel" class="muted">Awaiting dataset</span></div>
-          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Anchor H/L</th><th>Break</th><th>Confirmation</th><th>Entry</th><th>Target</th><th>Outcome</th><th>R</th></tr></thead><tbody id="sessionRows"></tbody></table></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Anchor H/L</th><th>Break</th><th>Confirmation</th><th>Entry</th><th>Target</th><th>Outcome</th><th>R</th></tr></thead>
+              <tbody id="sessionRows"></tbody>
+            </table>
+          </div>
         </section>
 
-        <footer><span>Time-Based Trading Robot · Research build</span><span>Historical / paper simulation only · No broker execution</span></footer>
+        <footer>
+          <span>Time-Based Trading Robot · Research build</span>
+          <span>Historical / paper simulation only · No broker execution</span>
+        </footer>
       </div>
     </main>
   </div>
