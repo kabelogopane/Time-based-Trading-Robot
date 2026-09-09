@@ -30,15 +30,18 @@ def scan_execution_window(candles: pd.DataFrame) -> Optional[PipelineSignal]:
     if candles.empty:
         return None
 
-    frame = candles.copy().reset_index(drop=True)
+    frame = candles.copy()
+    frame["timestamp"] = pd.to_datetime(frame["timestamp"])
+    frame = frame.sort_values("timestamp").reset_index(drop=True)
+
     sweeps = find_liquidity_sweeps(frame)
     fvgs = find_fvgs(frame)
 
     for sweep in sweeps:
-        direction = "long" if sweep.liquidity_type == "sell_side" else "short"
+        direction = "long" if sweep.direction == "low" else "short"
         expected_structure = "bullish" if direction == "long" else "bearish"
 
-        after_sweep = frame[frame["timestamp"] > sweep.timestamp]
+        after_sweep = frame[frame["timestamp"] > pd.Timestamp(sweep.timestamp)]
         if after_sweep.empty:
             continue
 
@@ -53,10 +56,11 @@ def scan_execution_window(candles: pd.DataFrame) -> Optional[PipelineSignal]:
             matching_fvgs = [
                 gap for gap in fvgs
                 if gap.direction == ("bullish" if direction == "long" else "bearish")
+                and gap.third_timestamp is not None
+                and pd.Timestamp(gap.third_timestamp) > pd.Timestamp(sweep.timestamp)
             ]
+
             for gap in matching_fvgs:
-                if gap.timestamp is not None and pd.Timestamp(gap.timestamp) <= sweep.timestamp:
-                    continue
                 later = frame[frame["timestamp"] > pd.Timestamp(gap.third_timestamp)]
                 if not fvg_retested(gap, later):
                     continue
@@ -72,7 +76,7 @@ def scan_execution_window(candles: pd.DataFrame) -> Optional[PipelineSignal]:
                     return PipelineSignal(
                         direction=direction,
                         entry=float(row["close"]),
-                        liquidity_type=sweep.liquidity_type,
+                        liquidity_type="sell_side" if sweep.direction == "low" else "buy_side",
                         structure=structure,
                         fvg_direction=gap.direction,
                         reason=signal.reason,
