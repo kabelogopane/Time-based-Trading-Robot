@@ -68,4 +68,5 @@ def aggregate_to_3m(candles: pd.DataFrame) -> pd.DataFrame:
 
 def aggregate_to_45m(candles: pd.DataFrame) -> pd.DataFrame:
     """Convert source OHLCV candles to 45-minute anchor candles aligned at :45."""
-    return aggregate_ohlcv(candles, 45, offset="15min")
+    # 45-minute bins from the top of the hour produce 09:45, 10:30, 11:15, ...
+    return aggregate_ohlcv(candles, 45, offset="0min")
