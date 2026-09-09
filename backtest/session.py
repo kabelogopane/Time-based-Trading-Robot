@@ -9,13 +9,13 @@ import pandas as pd
 from backtest.engine import TradeResult, evaluate_trade
 from strategy.anchor import detect_anchor
 from strategy.candle_windows import forward_candle_window
-from strategy.displacement import has_displacement
-from strategy.market_structure import classify_structure
+from strategy.pipeline import scan_execution_window
 from strategy.targets import rr_target
+from strategy.timeframe import aggregate_to_3m, aggregate_to_45m, normalize_new_york
 
 SESSION_START = "08:45"
 SESSION_END = "15:45"
-CANDLES_PER_WINDOW = 45
+EXECUTION_CANDLES_PER_WINDOW = 15
 
 
 @dataclass(frozen=True)
@@ -41,8 +41,7 @@ class SessionObservation:
 
 def _session_slice(candles: pd.DataFrame) -> pd.DataFrame:
     """Keep only the configured New York research session."""
-    local = candles.copy()
-    local["timestamp"] = pd.to_datetime(local["timestamp"])
+    local = normalize_new_york(candles)
     times = local["timestamp"].dt.strftime("%H:%M")
     return local[(times >= SESSION_START) & (times <= SESSION_END)].copy()
 
@@ -82,79 +81,67 @@ def _evaluate_setup(window: pd.DataFrame, entry_timestamp: pd.Timestamp, directi
     )
 
 
-def _anchor_relative_structure(anchor, row: pd.Series) -> str:
-    """Classify the current candle relative to the 09:45 anchor range.
-
-    This is deliberately a simple, reproducible research proxy. It is not a
-    full ICT swing-high/swing-low detector.
-    """
-    return classify_structure(
-        float(anchor.high),
-        float(anchor.low),
-        float(row["high"]),
-        float(row["low"]),
-    )
+def _prepare_execution_data(candles: pd.DataFrame) -> pd.DataFrame:
+    """Return 3-minute execution candles without double-aggregating 3m input."""
+    frame = normalize_new_york(candles)
+    if len(frame) < 2:
+        return frame
+    deltas = frame["timestamp"].diff().dropna().dt.total_seconds() / 60
+    median_minutes = float(deltas.median())
+    if median_minutes <= 1.5:
+        return aggregate_to_3m(frame)
+    return frame
 
 
 def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObservation | None:
-    """Analyze one New York session without placing a real order.
+    """Analyze one New York session using a 45m anchor and 3m execution data.
 
-    The 09:45 ET candle is the anchor. From that checkpoint, the model now
-    examines the next 45 candles as one explicit candle-count window. The
-    first close outside the anchor range is recorded once. A setup requires
-    anchor-relative structure and candle displacement. This is a testable
-    research hypothesis, not a claim about a hidden market algorithm.
+    The 09:45 ET 45-minute candle defines the higher-timeframe anchor. The
+    following 15 three-minute candles form the execution window. A setup is
+    accepted only when the research pipeline confirms liquidity sweep, market
+    structure, displacement, and FVG retest confluence.
     """
-    candles = frame.copy()
-    candles["timestamp"] = pd.to_datetime(candles["timestamp"])
-    candles = _session_slice(candles).sort_values("timestamp").reset_index(drop=True)
-    anchor = detect_anchor(candles)
+    raw = _session_slice(frame).sort_values("timestamp").reset_index(drop=True)
+    if raw.empty:
+        return None
+
+    anchor_data = aggregate_to_45m(raw)
+    anchor = detect_anchor(anchor_data)
     if anchor is None:
         return None
 
-    post = forward_candle_window(candles, pd.Timestamp(anchor.timestamp), CANDLES_PER_WINDOW)
+    execution = _prepare_execution_data(raw)
+    post = forward_candle_window(execution, pd.Timestamp(anchor.timestamp), EXECUTION_CANDLES_PER_WINDOW)
     if post.empty:
         return _empty_observation(anchor, post)
 
     post_anchor_high = float(post["high"].max())
     post_anchor_low = float(post["low"].min())
     first_break = "none"
-    first_confirmation = "none"
+    if (post["close"] > anchor.high).any():
+        first_break = "bullish"
+    elif (post["close"] < anchor.low).any():
+        first_break = "bearish"
+
+    signal = scan_execution_window(post)
     entry = invalidation = target = None
     entry_timestamp = None
     outcome = "no_setup"
     r_multiple = 0.0
+    first_confirmation = "none"
 
-    for _, row in post.iterrows():
-        close = float(row["close"])
-        if first_break == "none":
-            if close > anchor.high:
-                first_break = "bullish"
-            elif close < anchor.low:
-                first_break = "bearish"
-            else:
-                continue
-
-        structure = _anchor_relative_structure(anchor, row)
-        displaced = has_displacement(row)
-        confirmed = (
-            first_break == "bullish" and structure == "bullish" and displaced
-        ) or (
-            first_break == "bearish" and structure == "bearish" and displaced
-        )
-        if not confirmed:
-            continue
-
-        first_confirmation = first_break
-        entry = close
-        invalidation = anchor.low if first_break == "bullish" else anchor.high
-        direction = "long" if first_break == "bullish" else "short"
+    if signal is not None:
+        first_confirmation = signal.direction
+        entry = signal.entry
+        direction = signal.direction
+        invalidation = anchor.low if direction == "long" else anchor.high
         target = rr_target(entry, invalidation, reward_to_risk, direction)
-        entry_timestamp = pd.Timestamp(row["timestamp"])
-        result = _evaluate_setup(post, entry_timestamp, direction, entry, invalidation, target)
-        outcome = result.outcome
-        r_multiple = result.r_multiple
-        break
+        matching = post[post["close"] == entry]
+        if not matching.empty:
+            entry_timestamp = pd.Timestamp(matching.iloc[0]["timestamp"])
+            result = _evaluate_setup(post, entry_timestamp, direction, entry, invalidation, target)
+            outcome = result.outcome
+            r_multiple = result.r_multiple
 
     return SessionObservation(
         date=str(anchor.timestamp.date()),
@@ -179,8 +166,7 @@ def run_session(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> SessionObse
 
 def run_sessions(frame: pd.DataFrame, reward_to_risk: float = 2.0) -> list[SessionObservation]:
     """Run the model independently for every New York calendar date."""
-    candles = frame.copy()
-    candles["timestamp"] = pd.to_datetime(candles["timestamp"])
+    candles = normalize_new_york(frame)
     observations: list[SessionObservation] = []
     for _, day in candles.groupby(candles["timestamp"].dt.date):
         result = run_session(day, reward_to_risk=reward_to_risk)
