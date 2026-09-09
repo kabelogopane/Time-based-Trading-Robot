@@ -5,10 +5,11 @@ project:
 
 model:
   measurement: candles
-  bar_interval_minutes: 1
-  candles_per_window: 45
+  bar_interval_minutes: 3
+  candles_per_window: 15
   interval_minutes: 45
   primary_anchor: "09:45"
+  execution_timeframe_minutes: 3
   windows:
     - "08:45"
     - "09:45"
@@ -22,9 +23,11 @@ signal:
   require_confirmation: true
   allow_neutral: true
   use_liquidity: true
-  liquidity_required: false
+  liquidity_required: true
   use_displacement: true
   use_market_structure: true
+  use_fvg: true
+  require_fvg_retest: true
 
 risk:
   enabled_for_backtest: true
