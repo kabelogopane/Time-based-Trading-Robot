@@ -3,28 +3,118 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Time-Based Trading Robot research and backtesting terminal.">
   <title>Time-Based Research Terminal</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><div class="brand-mark">TB</div><div><p class="eyebrow">TIME-BASED RESEARCH TERMINAL</p><h1>45-Candle Model</h1><p class="subtitle">Time decides WHEN · Price decides WHAT · Liquidity decides WHERE</p></div></div>
-    <nav><a href="#dashboard">Dashboard</a><a href="#events">Events</a><a href="#sessions">Sessions</a><a href="#logic">Model</a></nav>
-    <div class="status"><span class="dot"></span> PAPER / RESEARCH</div>
-  </header>
-  <main id="dashboard" class="shell">
-    <section class="hero-row"><div><p class="eyebrow">MODEL CONTROL CENTER</p><h2>New York Session Monitor</h2><p class="muted">Historical research interface for the original 09:45 anchor and 45-candle window.</p></div><div class="clock-box"><span>NEW YORK TIME</span><strong id="clock">--:-- ET</strong><small id="window">--</small></div></section>
-    <section class="kpi-grid"><div class="kpi"><span>Sessions</span><strong id="sessionCount">--</strong><small>research days</small></div><div class="kpi"><span>Closed trades</span><strong id="tradeCount">--</strong><small>paper results</small></div><div class="kpi"><span>Win rate</span><strong id="winRate">--</strong><small>historical dataset</small></div><div class="kpi"><span>Net result</span><strong id="netR">--</strong><small>R multiple</small></div></section>
-    <section class="main-grid">
-      <section class="panel chart-panel"><div class="panel-head"><div><span class="section-label">PRICE VIEW</span><h3>Market Chart</h3></div><a class="button" href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Open Chart ↗</a></div><div class="chart"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div></section>
-      <aside class="panel state-panel"><div class="panel-head"><div><span class="section-label">ENGINE STATE</span><h3>Market State</h3></div><span class="live-tag">RESEARCH</span></div><div class="state-list"><div><span>Anchor</span><strong id="anchorState">09:45 · SET</strong></div><div><span>Break</span><strong id="breakState">--</strong></div><div><span>Structure</span><strong id="structureState">--</strong></div><div><span>Liquidity</span><strong id="liquidityState">--</strong></div><div><span>Displacement</span><strong id="displacementState">--</strong></div><div><span>Confirmation</span><strong id="confirmationState">--</strong></div></div><div id="decision" class="decision">LOADING RESEARCH RESULTS</div><p id="dataSource" class="source">Loading Python research dataset...</p></aside>
-    </section>
-    <section class="panel timeline-panel"><div class="panel-head"><div><span class="section-label">TIME MODEL</span><h3>45-Candle Session Timeline</h3></div><span class="muted">U.S. EASTERN TIME</span></div><div id="timeline" class="timeline"></div></section>
-    <section id="events" class="panel"><div class="panel-head"><div><span class="section-label">OBSERVABLE PRICE EVENTS</span><h3>Market Event Map</h3></div><span class="live-tag">PYTHON ENGINE</span></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Model</th><th>Liquidity</th><th>Event</th><th>Break</th><th>Structure</th><th>Displacement</th><th>Confirmation</th></tr></thead><tbody id="eventRows"></tbody></table></div></section>
-    <section id="logic" class="panel"><div class="panel-head"><div><span class="section-label">MODEL LOGIC</span><h3>Confirmed Research Setup</h3></div><span class="live-tag">PAPER ONLY</span></div><div class="setup-grid"><div><span>Direction</span><strong id="direction">--</strong></div><div><span>Entry</span><strong id="entry">--</strong></div><div><span>Invalidation</span><strong id="invalidation">--</strong></div><div><span>Target</span><strong id="target">--</strong></div><div><span>R:R</span><strong id="rr">2.0R</strong></div></div><div class="formula"><b>TIME</b><span>→</span><b>09:45 ANCHOR</b><span>→</span><b>45 CANDLES</b><span>→</span><b>LIQUIDITY</b><span>→</span><b>CONFIRMATION</b></div></section>
-    <section id="sessions" class="panel"><div class="panel-head"><div><span class="section-label">HISTORICAL RESULTS</span><h3>Session Replay Data</h3></div><span id="sessionDataLabel" class="muted">demo dataset</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Anchor H/L</th><th>Break</th><th>Confirmation</th><th>Entry</th><th>Target</th><th>Outcome</th><th>R</th></tr></thead><tbody id="sessionRows"></tbody></table></div></section>
-    <footer><span>Time-Based Trading Robot · Research build</span><span>Historical / paper simulation only · No broker execution</span></footer>
-  </main>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="brand-mark">TB</div>
+        <div><b>TIME-BASED</b><span>RESEARCH LAB</span></div>
+      </div>
+      <div class="side-section">
+        <span class="side-label">WORKSPACE</span>
+        <a class="side-link active" href="#dashboard"><span>⌂</span> Dashboard</a>
+        <a class="side-link" href="#events"><span>◈</span> Event Map</a>
+        <a class="side-link" href="#sessions"><span>▤</span> Sessions</a>
+        <a class="side-link" href="#logic"><span>◎</span> Model Logic</a>
+      </div>
+      <div class="side-section">
+        <span class="side-label">MODEL</span>
+        <div class="side-stat"><span>Timezone</span><b>New York / ET</b></div>
+        <div class="side-stat"><span>Anchor</span><b>09:45</b></div>
+        <div class="side-stat"><span>Window</span><b>45 candles</b></div>
+      </div>
+      <div class="side-bottom">
+        <div class="research-badge"><i></i><div><b>PAPER MODE</b><span>No live orders</span></div></div>
+        <small>Research build · Phase 2</small>
+      </div>
+    </aside>
+
+    <main id="dashboard" class="content">
+      <header class="topbar">
+        <div class="mobile-brand"><div class="brand-mark">TB</div><b>45-Candle Model</b></div>
+        <div class="top-actions"><span class="connection"><i></i> ENGINE READY</span><span class="paper-pill">PAPER / RESEARCH</span></div>
+      </header>
+
+      <div class="shell">
+        <section class="hero-row">
+          <div>
+            <p class="eyebrow">MODEL CONTROL CENTER</p>
+            <h1>New York Session Monitor</h1>
+            <p class="muted hero-copy">Time decides <b>WHEN</b> · Price decides <b>WHAT</b> · Liquidity decides <b>WHERE</b></p>
+          </div>
+          <div class="clock-box"><span>NEW YORK TIME</span><strong id="clock">--:-- ET</strong><small id="window">--</small></div>
+        </section>
+
+        <section class="kpi-grid">
+          <div class="kpi"><div class="kpi-icon">◷</div><div><span>Sessions</span><strong id="sessionCount">--</strong><small>research days</small></div></div>
+          <div class="kpi"><div class="kpi-icon">↗</div><div><span>Closed trades</span><strong id="tradeCount">--</strong><small>paper results</small></div></div>
+          <div class="kpi"><div class="kpi-icon">%</div><div><span>Win rate</span><strong id="winRate">--</strong><small>historical dataset</small></div></div>
+          <div class="kpi"><div class="kpi-icon">R</div><div><span>Net result</span><strong id="netR">--</strong><small>R multiple</small></div></div>
+        </section>
+
+        <section class="signal-strip">
+          <div><span class="section-label">ENGINE STATUS</span><b id="engineStatus">RESEARCH DATA</b></div>
+          <div class="strip-item"><span>Anchor</span><b>09:45 ET</b></div>
+          <div class="strip-item"><span>Framework</span><b>45-Candle</b></div>
+          <div class="strip-item"><span>Execution</span><b>DISABLED</b></div>
+        </section>
+
+        <section class="main-grid">
+          <section class="panel chart-panel">
+            <div class="panel-head"><div><span class="section-label">PRICE VIEW</span><h2>Market Chart</h2></div><a class="button" href="https://www.tradingview.com/" target="_blank" rel="noreferrer">Open Chart ↗</a></div>
+            <div class="chart"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div>
+          </section>
+
+          <aside class="panel state-panel">
+            <div class="panel-head"><div><span class="section-label">ENGINE STATE</span><h2>Market State</h2></div><span class="live-tag">RESEARCH</span></div>
+            <div class="state-hero"><span>MODEL DECISION</span><strong id="decision">LOADING RESEARCH RESULTS</strong><small id="dataSource">Loading Python research dataset...</small></div>
+            <div class="state-list">
+              <div><span>Anchor</span><strong id="anchorState">09:45 · SET</strong></div>
+              <div><span>Break</span><strong id="breakState">--</strong></div>
+              <div><span>Structure</span><strong id="structureState">--</strong></div>
+              <div><span>Liquidity</span><strong id="liquidityState">--</strong></div>
+              <div><span>Displacement</span><strong id="displacementState">--</strong></div>
+              <div><span>Confirmation</span><strong id="confirmationState">--</strong></div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="panel timeline-panel">
+          <div class="panel-head"><div><span class="section-label">TIME MODEL</span><h2>Session Timeline</h2></div><span class="muted">U.S. EASTERN TIME</span></div>
+          <div id="timeline" class="timeline"></div>
+        </section>
+
+        <section id="logic" class="panel setup-panel">
+          <div class="panel-head"><div><span class="section-label">MODEL LOGIC</span><h2>Research Setup</h2></div><span class="live-tag">PAPER ONLY</span></div>
+          <div class="setup-grid">
+            <div><span>Direction</span><strong id="direction">--</strong></div>
+            <div><span>Entry</span><strong id="entry">--</strong></div>
+            <div><span>Invalidation</span><strong id="invalidation">--</strong></div>
+            <div><span>Target</span><strong id="target">--</strong></div>
+            <div><span>R:R</span><strong id="rr">2.0R</strong></div>
+          </div>
+          <div class="formula"><b>TIME</b><span>→</span><b>09:45 ANCHOR</b><span>→</span><b>45 CANDLES</b><span>→</span><b>LIQUIDITY</b><span>→</span><b>CONFIRMATION</b></div>
+        </section>
+
+        <section id="events" class="panel">
+          <div class="panel-head"><div><span class="section-label">OBSERVABLE PRICE EVENTS</span><h2>Market Event Map</h2></div><span class="live-tag">PYTHON ENGINE</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Time</th><th>Model</th><th>Liquidity</th><th>Event</th><th>Break</th><th>Structure</th><th>Displacement</th><th>Confirmation</th></tr></thead><tbody id="eventRows"></tbody></table></div>
+        </section>
+
+        <section id="sessions" class="panel">
+          <div class="panel-head"><div><span class="section-label">HISTORICAL RESULTS</span><h2>Session Replay Data</h2></div><span id="sessionDataLabel" class="muted">Awaiting dataset</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Anchor H/L</th><th>Break</th><th>Confirmation</th><th>Entry</th><th>Target</th><th>Outcome</th><th>R</th></tr></thead><tbody id="sessionRows"></tbody></table></div>
+        </section>
+
+        <footer><span>Time-Based Trading Robot · Research build</span><span>Historical / paper simulation only · No broker execution</span></footer>
+      </div>
+    </main>
+  </div>
+
   <script src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>{"autosize":true,"symbol":"OANDA:NAS100USD","interval":"1","timezone":"America/New_York","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"support_host":"https://www.tradingview.com"}</script>
   <script src="app.js"></script>
 </body>
