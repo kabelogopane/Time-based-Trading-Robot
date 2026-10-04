@@ -1,3 +1,5 @@
+> **Re-audit note — 4 October 2026:** A later exact replay of the current repository pipeline against the same dataset reproduced **1**, not 2, first fully confirmed September signals. The reproducible signal is 11 September (long). The earlier 2-signal count is retained below as the original exploratory funnel result, but the newer rejected-setup review is the authoritative exact-pipeline audit. See `research/september_rejected_setup_review_2026-10-04.md`.
+
 # September 2026 Research Funnel Review
 
 Date: 4 October 2026
