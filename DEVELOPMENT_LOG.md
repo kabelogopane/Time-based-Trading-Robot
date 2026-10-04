@@ -90,3 +90,94 @@ The objective is to build a **transparent, testable and reproducible trading-res
 **Last documented work:** 23 September 2026
 
 **Related application repository:** Trading-Robot-App-2.0
+
+
+---
+
+## 4 October 2026 — September 2026 Data and Strategy Funnel Review
+
+### Work Completed
+
+Today I continued the historical research using the uploaded `SPX500_1m(1).csv` one-minute dataset.
+
+The purpose was to understand why the current 09:45 time-based model produced very few September setups before changing any strategy rules.
+
+### Data Review
+
+- 180,320 one-minute OHLCV rows were available.
+- Data coverage: 26 March 2026 to 25 September 2026.
+- 19 September sessions contained a valid 09:45 anchor.
+- The September sample passed the basic OHLC validation checks.
+
+### Five Research Steps Completed
+
+#### 1. September session audit
+
+The September sample was separated from the wider dataset and checked using the existing 09:45 anchor and 3-minute execution structure.
+
+#### 2. Confirmation funnel analysis
+
+The current 45-minute execution window was examined stage by stage:
+
+- 39 liquidity-sweep observations.
+- 39 sweep paths reached matching structure checks.
+- 13 reached displacement.
+- 9 matching FVG formations were identified.
+- 3 FVG retest candidates were found.
+- The current first-signal-per-session pipeline produced 2 confirmed session signals.
+
+The confirmed signals were on 11 September and 17 September. Both remained open within the defined 45-minute evaluation window.
+
+Therefore September produced 0 closed wins and 0 closed losses under the current rules.
+
+#### 3. Bottleneck identification
+
+The strongest restriction appears late in the confirmation chain, especially the FVG retest requirement.
+
+This does not prove that the FVG rule is wrong. It shows that the combined confirmation chain is highly restrictive on this sample.
+
+No extra filter was added.
+
+#### 4. Execution-window sensitivity test
+
+Exploratory windows were checked without changing the entry logic:
+
+| Window | Signals | Closed Wins | Closed Losses | Net R |
+|---|---:|---:|---:|---:|
+| 45 minutes | 2 | 0 | 0 | 0 |
+| 60 minutes | 4 | 0 | 1 | -1 |
+| 75 minutes | 6 | 1 | 1 | +1 |
+| 90 minutes | 9 | 2 | 2 | +2 |
+
+These results are too small to justify selecting a new window.
+
+#### 5. Displacement sensitivity test
+
+The 45-minute window was checked with displacement thresholds of 0.50, 0.60, 0.70 and 0.80.
+
+All four produced the same two first confirmed September signals. Therefore the September lack of signals is not mainly caused by the 0.70 displacement threshold.
+
+### Research Decision
+
+The core strategy was **not changed** today.
+
+The next investigation should inspect the rejected September setups and determine whether they are:
+
+1. valid non-setups under the existing rules,
+2. missed opportunities caused by a rigid rule definition, or
+3. cases where a rule is measuring the wrong thing.
+
+The project will continue to avoid adding filters simply to increase the reported win rate.
+
+### Documentation
+
+A detailed review was added to:
+
+`research/september_funnel_review_2026-10-04.md`
+
+### Development Principle
+
+Today's main finding is that **more filtering is not automatically better**. Before adding another rule, the existing confirmation chain needs to be understood and tested against the actual rejected sessions.
+
+**Development status:** Active
+**Research mode:** Historical / paper simulation only
