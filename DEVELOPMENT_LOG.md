@@ -181,3 +181,98 @@ Today's main finding is that **more filtering is not automatically better**. Bef
 
 **Development status:** Active
 **Research mode:** Historical / paper simulation only
+
+
+---
+
+## 4 October 2026 — Rejected-Setup Classification and Exact Pipeline Re-audit
+
+### Work Completed
+
+The September research was continued without changing the strategy.
+
+The current repository pipeline was replayed against the uploaded `SPX500_1m(1).csv` dataset and the 39 September liquidity-sweep observations were classified by the first confirmation stage they failed.
+
+### Five Research Steps Completed
+
+#### 1. Exact current-pipeline replay
+
+The current 09:45 / 3-minute / 45-minute model was rechecked from the repository code.
+
+The exact current pipeline reproduced **1 first fully confirmed September signal**, on 11 September 2026.
+
+The earlier research note reported 2 signals. That result could not be reproduced against the current repository code, so the newer exact replay is treated as authoritative.
+
+#### 2. Rejected-sweep classification
+
+The 39 sweep observations were classified as:
+
+- 30 — structure/displacement not fully confirmed on the required candle.
+- 3 — structure + displacement reached, but no matching FVG.
+- 5 — FVG formed, but no retest inside 45 minutes.
+- 1 — fully confirmed.
+
+This shows that most rejected paths fail before the FVG stage.
+
+#### 3. Same-candle confirmation test
+
+As a diagnostic only, the 30 early rejections were checked to see whether structure and directional displacement appeared later on separate candles.
+
+Only 1 of the 30 could satisfy a relaxed structure-then-displacement sequence, and that path still did not become a complete FVG/retest setup.
+
+The current confirmation rule was not changed.
+
+#### 4. Extended-window timing check
+
+The five FVG paths that did not retest inside the normal 45-minute window were observed beyond the window.
+
+Two showed delayed retests:
+
+- 9 September — immediately after the 45-minute window.
+- 17 September — approximately 15 minutes after the 45-minute window.
+
+One did not retest within the extended 90-minute observation.
+
+This confirms that timing can matter, but it is not enough evidence to change the 45-minute model.
+
+#### 5. Research decision
+
+No strategy rule was changed.
+
+No new filter was added.
+
+No change was made to:
+
+- the 09:45 anchor,
+- the 45-minute execution window,
+- the displacement threshold,
+- the confirmation order,
+- the FVG requirement,
+- or the historical/paper-only research design.
+
+### Main Finding
+
+The September signal shortage is mainly caused by rejected confirmation paths before the FVG stage. A smaller secondary issue is that some FVGs retest after the 45-minute window.
+
+### Next Research Direction
+
+Expand this rejected-setup classification across the full available dataset.
+
+The next question is:
+
+**Are these rejection patterns normal for the model, or are they mainly a September-specific behaviour?**
+
+Only after that larger-sample test should any strategy rule be considered for modification.
+
+### Documentation
+
+Added:
+
+`research/september_rejected_setup_review_2026-10-04.md`
+
+Updated:
+
+`research/september_funnel_review_2026-10-04.md`
+
+**Strategy status:** Unchanged  
+**Research mode:** Historical / paper simulation only
