@@ -1,0 +1,8 @@
+date,close_time,instrument,side,close_price,avg_price,units,realized_pnl_usd,source_page,source_type
+2026-09-17,09:13:10,BLACKBULL:US500.F,long,7613.28,7544.13,5,345.75,54,paper-trade-history
+2026-09-17,21:51:31,BLACKBULL:US500.F,short,7713.51,7694.78,20,-374.60,54,paper-trade-history
+2026-09-22,16:41:20,BLACKBULL:USTEC.F,long,30927.44,30981.30,2,-107.72,54,paper-trade-history
+2026-09-25,15:03:57,BLACKBULL:USTEC.F,short,30878.58,30904.935,4,105.42,54,paper-trade-history
+2026-09-25,16:05:44,BLACKBULL:USTEC.F,short,30770.93,30833.80,1,62.87,54,paper-trade-history
+2026-09-25,16:17:31,BLACKBULL:USTEC.F,short,30700.01,30833.80,1,133.79,54,paper-trade-history
+2026-09-25,16:18:19,BLACKBULL:USTEC.F,short,30718.18,30833.80,1,115.62,54,paper-trade-history
